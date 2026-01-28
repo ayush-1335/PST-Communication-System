@@ -10,7 +10,7 @@ import mongoose from "mongoose"
 
 
 const registerUser = async (req, res) => {
-    const { firstName, lastName, email, username, password, role, standard, address, phone, subject} = req.body
+    const { firstName, lastName, email, username, password, role, standard, address, phone, subject } = req.body
 
     if ([firstName, lastName, username, password, role].some((field) => (field?.toString().trim() === "" || field === null || field === undefined))) {
         throw new ApiError(400, "All fields are required!")
@@ -51,7 +51,7 @@ const registerUser = async (req, res) => {
 
         const studentCode = await generateStudentCode()
 
-        await Student.create({ 
+        await Student.create({
             user: user._id,
             studentCode,
             standard,
@@ -60,14 +60,14 @@ const registerUser = async (req, res) => {
     }
 
     if (role === "TEACHER") {
-        await Teacher.create({ 
+        await Teacher.create({
             user: user._id,
             subject
         })
     }
 
     if (role === "PARENT") {
-        await Parent.create({ 
+        await Parent.create({
             user: user._id,
             phone
         })
@@ -168,35 +168,39 @@ const logoutUser = async (req, res) => {
         )
 }
 
-const getUserDetails = async (req, res) => {
-    const user = req.user   
+// const getUserDetails = async (req, res) => {
+//     const user = req.user
 
-    return res.status(200)
-        .json(
-            new ApiResponce(200, user, "User details fetch successfully")
-        )
-}
-
-// const user = await User.findById(userId).select("-password")
-//     console.log(user)
-
-//     if (!user) { 
-//         return res.status(404)
-//             .json(
-//                 new ApiResponce(404, null, "User not found")
-//             )
-//     }
-
-//     if (!user.isActive) {
-//         return res.status(403)
-//             .json(
-//                 new ApiResponce(403, null, "User account is disabled")
-//             )
-//     }
+//     return res.status(200)
+//         .json(
+//             new ApiResponce(200, user, "User details fetch successfully")
+//         )
+// }
 
 const getUserProfile = async (req, res) => {
-    const userId = req.user._id
+    const userId = req.user.userId
+    const user = await User.findById(userId).select("-password")
+
+    if (!user) {
+        return res.status(404)
+            .json(
+                new ApiResponce(404, null, "User not found")
+            )
+    }
+
+    if (!user.isActive) {
+        return res.status(403)
+            .json(
+                new ApiResponce(403, null, "User account is disabled")
+            )
+    }
+
+    return res.status(200)
+    .json(
+        new ApiResponce(200, user, "User profile fetch Successfully")
+    )
+
 }
 
 
-export { registerUser, loginUser, logoutUser, getUserDetails }
+export { registerUser, loginUser, logoutUser, getUserProfile }

@@ -44,19 +44,14 @@ const Navbar = () => {
             <NavLink to="/contact" className={linkClass}>
               Contact
             </NavLink>
+            
+            <NavLink to="/dashboard" className={linkClass}>
+              Dashboard
+            </NavLink>
 
-            {user?.role === "STUDENT" && (
+            {/* {user?.role === "STUDENT" && (
               <NavLink to="/student" className={linkClass}>Dashboard</NavLink>
-            )}
-            {user?.role === "TEACHER" && (
-              <NavLink to="/teacher" className={linkClass}>Dashboard</NavLink>
-            )}
-            {user?.role === "PARENT" && (
-              <NavLink to="/parent" className={linkClass}>Dashboard</NavLink>
-            )}
-            {user?.role === "ADMIN" && (
-              <NavLink to="/admin" className={linkClass}>Dashboard</NavLink>
-            )}
+            )} */}
 
           </div>
 
@@ -82,7 +77,7 @@ const Navbar = () => {
               <>
                 {/* Profile Button */}
                 <NavLink
-                  to="/profile"
+                  to={"/profile"  }
                   className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition"
                 >
                   <img
@@ -90,7 +85,7 @@ const Navbar = () => {
                     alt="profile"
                     className="w-8 h-8 rounded-full object-cover border border-gray-600"
                   />
-                  <span>{user?.name || "Profile"}</span>
+                  <span>{user?.firstName || "Profile"}</span>
                 </NavLink>
 
                 {/* Logout Button */}

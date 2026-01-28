@@ -8,9 +8,10 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        const getMe = async () => {
+        const fetchProfile = async () => {
+            setLoading(true)
             try {
-                const res = await fetch("http://localhost:8000/users/me", {
+                const res = await fetch("http://localhost:8000/users/profile", {
                     method: "GET",
                     credentials: "include",
                 });
@@ -32,10 +33,11 @@ export const AuthProvider = ({ children }) => {
             }
         };
 
-        getMe();
+        fetchProfile();
     }, []);
 
     const login = async (logindata) => {
+
         setLoading(true)
 
         try {

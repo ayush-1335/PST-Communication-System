@@ -36,7 +36,7 @@ const Login = () => {
       setError("")
       setFormData({ username: "", password: "" })
 
-      navigate(`"/${user?.role.toLowerCase()}"`);
+      navigate("/dashboard");
 
   };
 
