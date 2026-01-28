@@ -1,13 +1,21 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
   const linkClass = ({ isActive }) =>
     `px-3 py-2 rounded-md text-sm font-medium transition
-     ${
-       isActive
-         ? "bg-blue-600 text-white"
-         : "text-gray-300 hover:bg-gray-700 hover:text-white"
-     }`;
+     ${isActive
+      ? "bg-blue-600 text-white"
+      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+    }`;
 
   return (
     <nav className="bg-gray-900">
@@ -36,15 +44,66 @@ const Navbar = () => {
             <NavLink to="/contact" className={linkClass}>
               Contact
             </NavLink>
+
+            {user?.role === "STUDENT" && (
+              <NavLink to="/student" className={linkClass}>Dashboard</NavLink>
+            )}
+            {user?.role === "TEACHER" && (
+              <NavLink to="/teacher" className={linkClass}>Dashboard</NavLink>
+            )}
+            {user?.role === "PARENT" && (
+              <NavLink to="/parent" className={linkClass}>Dashboard</NavLink>
+            )}
+            {user?.role === "ADMIN" && (
+              <NavLink to="/admin" className={linkClass}>Dashboard</NavLink>
+            )}
+
           </div>
 
           {/* Auth Button */}
-          <NavLink
-            to="/login"
-            className="bg-blue-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-blue-700"
-          >
-            Login
-          </NavLink>
+          <div className="flex items-center gap-4">
+            {!user ? (
+              <>
+                <NavLink
+                  to="/register"
+                  className="bg-blue-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-blue-700"
+                >
+                  Register
+                </NavLink>
+
+                <NavLink
+                  to="/login"
+                  className="bg-blue-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-blue-700"
+                >
+                  Login
+                </NavLink>
+              </>
+            ) : (
+              <>
+                {/* Profile Button */}
+                <NavLink
+                  to="/profile"
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition"
+                >
+                  <img
+                    src={user?.avatar || "https://i.pravatar.cc/40"}
+                    alt="profile"
+                    className="w-8 h-8 rounded-full object-cover border border-gray-600"
+                  />
+                  <span>{user?.name || "Profile"}</span>
+                </NavLink>
+
+                {/* Logout Button */}
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-red-700 transition"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+          </div>
+
         </div>
       </div>
     </nav>

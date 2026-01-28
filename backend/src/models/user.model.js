@@ -64,11 +64,11 @@ userSchema.pre("save", async function () {
     if (!this.isModified("password")) return;
 
     this.password = await bcryptjs.hash(this.password, 10);
-
+    
 })
 
 userSchema.methods.isPasswordCorrect = async function (password) {
-    return await bcryptjs.compare(password, this.password)
+    return await bcryptjs.compare(password.toString() , this.password)
 }
 
 export const User = mongoose.model("User", userSchema)

@@ -1,3 +1,5 @@
+import mongoose, { Schema } from "mongoose"
+
 const teacherSchema = new mongoose.Schema(
   {
     user: {
