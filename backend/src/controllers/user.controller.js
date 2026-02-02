@@ -3,7 +3,7 @@ import { User } from "../models/user.model.js"
 import { Teacher } from "../models/teacher.model.js"
 import { Student } from "../models/student.model.js"
 import { Parent } from "../models/parent.model.js"
-import { ApiResponce } from "../utils/ApiResponce.js"
+import { ApiResponse } from "../utils/ApiResponse.js"
 import { generateAccessToken } from "../utils/token.js"
 import generateStudentCode from "../utils/generateStudentCode.js"
 import mongoose from "mongoose"
@@ -13,14 +13,16 @@ const registerUser = async (req, res) => {
     const { firstName, lastName, email, username, password, role, standard, address, phone, subject } = req.body
 
     if ([firstName, lastName, username, password, role].some((field) => (field?.toString().trim() === "" || field === null || field === undefined))) {
-        throw new ApiError(400, "All fields are required!")
+        return res.status(400).json(
+            new ApiResponse(400, null, "All fields are required!")
+        )
     }
 
     let existedUser = await User.findOne({ username })
 
     if (existedUser) {
         return res.status(409).json(
-            new ApiResponce(409, null, "user with this username already exists!")
+            new ApiResponse(409, null, "user with this username already exists!")
         )
     }
 
@@ -28,7 +30,7 @@ const registerUser = async (req, res) => {
 
     if (existedUser) {
         return res.status(409).json(
-            new ApiResponce(409, null, "user with this email already exists!")
+            new ApiResponse(409, null, "user with this email already exists!")
         )
     }
 
@@ -74,7 +76,7 @@ const registerUser = async (req, res) => {
     }
 
     return res.status(200).json(
-        new ApiResponce(200, createdUser, "User created Successfully")
+        new ApiResponse(200, createdUser, "User created Successfully")
     )
 }
 
@@ -86,7 +88,7 @@ const loginUser = async (req, res) => {
         return res
             .status(409)
             .json(
-                new ApiResponce(409, null, "username required", false)
+                new ApiResponse(409, null, "username required", false)
             )
     }
 
@@ -95,7 +97,7 @@ const loginUser = async (req, res) => {
         return res
             .status(409)
             .json(
-                new ApiResponce(409, null, "password required", false)
+                new ApiResponse(409, null, "password required", false)
             )
     }
 
@@ -107,7 +109,7 @@ const loginUser = async (req, res) => {
         return res
             .status(409)
             .json(
-                new ApiResponce(409, null, "Invalid username", false)
+                new ApiResponse(409, null, "Invalid username", false)
             )
     }
 
@@ -118,7 +120,7 @@ const loginUser = async (req, res) => {
         return res
             .status(409)
             .json(
-                new ApiResponce(409, null, "Invalid Password", false)
+                new ApiResponse(409, null, "Invalid Password", false)
             )
     }
 
@@ -146,7 +148,7 @@ const loginUser = async (req, res) => {
         .status(200)
         .cookie("accessToken", accessToken, options)
         .json(
-            new ApiResponce(200, {
+            new ApiResponse(200, {
                 safeUser,
             }, "User LoggedIn Successfully")
         )
@@ -164,7 +166,7 @@ const logoutUser = async (req, res) => {
         .status(200)
         .clearCookie("accessToken", options)
         .json(
-            new ApiResponce(200, null, "User logout Successfully", true)
+            new ApiResponse(200, null, "User logout Successfully", true)
         )
 }
 
@@ -173,7 +175,7 @@ const logoutUser = async (req, res) => {
 
 //     return res.status(200)
 //         .json(
-//             new ApiResponce(200, user, "User details fetch successfully")
+//             new ApiResponse(200, user, "User details fetch successfully")
 //         )
 // }
 
@@ -184,20 +186,20 @@ const getUserProfile = async (req, res) => {
     if (!user) {
         return res.status(404)
             .json(
-                new ApiResponce(404, null, "User not found")
+                new ApiResponse(404, null, "User not found")
             )
     }
 
     if (!user.isActive) {
         return res.status(403)
             .json(
-                new ApiResponce(403, null, "User account is disabled")
+                new ApiResponse(403, null, "User account is disabled")
             )
     }
 
     return res.status(200)
     .json(
-        new ApiResponce(200, user, "User profile fetch Successfully")
+        new ApiResponse(200, user, "User profile fetch Successfully")
     )
 
 }

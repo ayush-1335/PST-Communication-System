@@ -1,6 +1,6 @@
 import { ApiError } from "../utils/ApiError.js"
 import jwt from "jsonwebtoken"
-import { ApiResponce } from "../utils/ApiResponce.js"
+import { ApiResponse } from "../utils/ApiResponse.js"
 
 const authMiddleware = async(req, res, next) => {
     try {
@@ -11,7 +11,7 @@ const authMiddleware = async(req, res, next) => {
             return res
             .status(401)
             .json(
-                new ApiResponce(401, null, "Access Token expired!", false)
+                new ApiResponse(401, null, "Unauthorized!", false)
             )
         }
 
@@ -25,7 +25,10 @@ const authMiddleware = async(req, res, next) => {
         next()
 
     } catch (error) {
-        throw new ApiError(401, "Error while checking Token!")
+            return res.status(401).json(
+        new ApiResponse(401, null, "Invalid or expired token", false)
+    )
+
     }
 }
 
