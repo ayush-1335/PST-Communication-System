@@ -6,16 +6,15 @@ import { useNavigate } from "react-router-dom";
 const Login = () => {
   const navigate = useNavigate();
 
-
+  const { user, login, loading } = useAuth()
+  
   const [formData, setFormData] = useState({
     username: "",
     password: ""
   });
-
+  
   const [error, setError] = useState("")
-
-  const { user, login, loading } = useAuth()
-
+  
   const handleChange = (e) => {
     setFormData({
       ...formData,

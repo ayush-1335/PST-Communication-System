@@ -11,7 +11,6 @@ const studentSchema = new mongoose.Schema(
 
     rollNumber: {
       type: String,
-      // required: true,
       unique: true,
       sparse: true
     },
@@ -23,7 +22,7 @@ const studentSchema = new mongoose.Schema(
     },
 
     section: {
-        type: String
+      type: String
     },
 
     studentCode: {

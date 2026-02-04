@@ -7,6 +7,12 @@ import { PublicRoute } from "./Routes/PublicRoutes";
 import { ProtectedRoute } from "./Routes/ProtectedRoutes";
 import Dashboard from "./Components/Dashboard";
 import Profile from "./Components/Profile";
+import AdminDashboard from "./Admin/AdminDashboard";
+import Overview from "./MainPages/Admin/Overview"
+import CreateUser from "./MainPages/Admin/CreateUser"
+import Students from "./MainPages/Admin/Students"
+import Parents from "./MainPages/Admin/Parents"
+import Teachers from "./MainPages/Admin/Teachers"
 
 function App() {
 
@@ -22,9 +28,7 @@ function App() {
           <Route
             path="/login"
             element={
-              // <PublicRoute>
-                <Login />
-              // </PublicRoute>
+              user ? <Navigate to="/dashboard" /> : <Login />
             }
           />
 
@@ -55,6 +59,24 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Overview />} />
+            {/* <Route path="users" element={<AdminUsers />} /> */}
+            <Route path="create-user" element={<CreateUser />} />
+            <Route path="parents" element={<Parents />} />
+            <Route path="students" element={<Students />} />
+            <Route path="teachers" element={<Teachers />} />
+          </Route>
+
+
 
           {/* Default route */}
           <Route path="/" element={<Navigate to="/" />} />

@@ -53,12 +53,14 @@ const registerUser = async (req, res) => {
 
         const studentCode = await generateStudentCode()
 
-        await Student.create({
+        const student = await Student.create({
             user: user._id,
             studentCode,
             standard,
             address
         })
+
+        console.log(student)
     }
 
     if (role === "TEACHER") {
@@ -180,29 +182,168 @@ const logoutUser = async (req, res) => {
 // }
 
 const getUserProfile = async (req, res) => {
-    const userId = req.user.userId
-    const user = await User.findById(userId).select("-password")
+    const userId = req.user.userId;
 
-    if (!user) {
-        return res.status(404)
-            .json(
-                new ApiResponse(404, null, "User not found")
-            )
+    const userDoc = await User.findById(userId).select("-password");
+
+    if (!userDoc) {
+        return res.status(404).json(
+            new ApiResponse(404, null, "User not found")
+        );
     }
 
-    if (!user.isActive) {
-        return res.status(403)
-            .json(
-                new ApiResponse(403, null, "User account is disabled")
-            )
+    if (!userDoc.isActive) {
+        return res.status(403).json(
+            new ApiResponse(403, null, "User account is disabled")
+        );
     }
 
-    return res.status(200)
-    .json(
+    // convert mongoose document → plain object
+    const user = userDoc.toObject();
+
+    if (user.role === "STUDENT") {
+        const student = await Student.findOne({ user: userId })
+            .select("address standard studentCode -_id");
+
+        if (!student) {
+            return res.status(404).json(
+                new ApiResponse(404, null, "Student profile not found")
+            );
+        }
+
+        user.address = student.address;
+        user.standard = student.standard;
+        user.studentCode = student.studentCode;
+    }
+
+    if (user.role === "PARENT") {
+        const parent = await Parent.findOne({ user: userId })
+            .select("phone -_id");
+
+        if (!parent) {
+            return res.status(404).json(
+                new ApiResponse(404, null, "Parent profile not found")
+            );
+        }
+
+        user.phone = parent.phone;
+    }
+
+    if (user.role === "TEACHER") {
+        const teacher = await Teacher.findOne({ user: userId })
+            .select("subject -_id");
+
+        if (!teacher) {
+            return res.status(404).json(
+                new ApiResponse(404, null, "Teacher profile not found")
+            );
+        }
+
+        user.subject = teacher.subject;
+    }
+
+    console.log("Profile :", user);
+
+    return res.status(200).json(
         new ApiResponse(200, user, "User profile fetch Successfully")
-    )
+    );
+}
 
+const updateProfile = async (req, res) => {
+
+    const userId = req.user.userId;
+    const user = await User.findById(userId).select("-password");
+}
+
+const getAllStudents = async (req, res) => {
+
+    // console.log("IN get all students")
+
+    try {
+        const students = await Student.find()
+            .populate({
+                path: "user",
+                select: "-password"
+            })
+
+        if (!students.length) {
+            return res.status(404).json(
+                new ApiResponse(404, [], "No students found")
+            )
+        }
+
+        // console.log(students)
+
+        return res.status(200).json(
+            new ApiResponse(200, students, "Students fetched successfully")
+        )
+    } catch (error) {
+        console.error("Error fetching students:", error)
+        return res.status(500).json(
+            new ApiResponse(500, null, "Internal server error", false)
+        )
+    }
+}
+
+const getAllParents = async (req, res) => {
+
+    // console.log("IN get all parents")
+
+    try {
+        const parents = await Parent.find()
+            .populate({
+                path: "user",
+                select: "-password"
+            })
+
+        if (!parents.length) {
+            return res.status(404).json(
+                new ApiResponse(404, [], "No parents found")
+            )
+        }
+
+        // console.log(parents)
+
+        return res.status(200).json(
+            new ApiResponse(200, parents, "Parents fetched successfully")
+        )
+    } catch (error) {
+        console.error("Error fetching parents:", error)
+        return res.status(500).json(
+            new ApiResponse(500, null, "Internal server error", false)
+        )
+    }
+}
+
+const getAllTeachers = async (req, res) => {
+
+    // console.log("IN get all teachers")
+
+    try {
+        const teachers = await Teacher.find()
+            .populate({
+                path: "user",
+                select: "-password"
+            })
+
+        if (!teachers.length) {
+            return res.status(404).json(
+                new ApiResponse(404, [], "No teachers found")
+            )
+        }
+
+        // console.log(teachers)
+
+        return res.status(200).json(
+            new ApiResponse(200, teachers, "Teachers fetched successfully")
+        )
+    } catch (error) {
+        console.error("Error fetching teachers:", error)
+        return res.status(500).json(
+            new ApiResponse(500, null, "Internal server error", false)
+        )
+    }
 }
 
 
-export { registerUser, loginUser, logoutUser, getUserProfile }
+export { registerUser, loginUser, logoutUser, getUserProfile, getAllStudents, getAllParents, getAllTeachers, updateProfile }

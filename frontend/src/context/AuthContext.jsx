@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
                     credentials: "include",
                 });
 
-                console.log("responce:", res)
+                console.log("Profile:", res)
 
                 if (!res.ok) {
                     setUser(null);

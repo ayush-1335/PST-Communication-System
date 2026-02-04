@@ -1,7 +1,8 @@
 import {Router} from "express"
-import { loginUser, registerUser, logoutUser, getUserProfile } from "../controllers/user.controller.js"
+import { loginUser, registerUser, logoutUser, getUserProfile, getAllStudents, getAllParents, getAllTeachers, updateProfile } from "../controllers/user.controller.js"
 import authMiddleware from "../middleware/auth.middleware.js"
 import parentRouter from "./parent.route.js"
+import adminRouter from "./admin.route.js"
 
 const router = Router()
 
@@ -9,7 +10,13 @@ router.route("/register").post(registerUser)
 router.route("/login").post( loginUser)
 router.route("/logout").post(authMiddleware, logoutUser)
 router.route("/profile").get(authMiddleware, getUserProfile)
+router.route("/students").get(authMiddleware, getAllStudents)
+router.route("/parents").get(authMiddleware, getAllParents)
+router.route("/teachers").get(authMiddleware, getAllTeachers)
+router.route("/update-profile").post(authMiddleware, updateProfile)
 
 router.use("/parent", parentRouter)
+
+router.use("/admin", adminRouter)
 
 export default router

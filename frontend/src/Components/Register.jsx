@@ -1,6 +1,17 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Register = () => {
+
+    const navigate  = useNavigate()
+
+    const { user }= useAuth()
+
+    if(user){
+        navigate("/dashboard")
+    }
+
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -95,7 +106,7 @@ const Register = () => {
                 subject: ""
             });
 
-            navigate(`"/${user?.role.toLowerCase()}"`);
+            navigate("/");
 
         } catch (err) {
             console.log("Registration error : ", err)
