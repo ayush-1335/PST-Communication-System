@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose"
+import mongoose from "mongoose"
 
 const teacherSchema = new mongoose.Schema(
   {
@@ -14,12 +14,10 @@ const teacherSchema = new mongoose.Schema(
       required: true
     },
 
-    standards: [
-      {
-        standard: String,
-        section: String
-      }
-    ]
+    classes: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Class"
+    }]
   },
   { timestamps: true }
 );

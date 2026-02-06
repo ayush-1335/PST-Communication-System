@@ -10,7 +10,7 @@ import mongoose from "mongoose"
 
 
 const registerUser = async (req, res) => {
-    const { firstName, lastName, email, username, password, role, standard, address, phone, subject } = req.body
+    const { firstName, lastName, username, password, role, standard, address, phone, subject } = req.body
 
     if ([firstName, lastName, username, password, role].some((field) => (field?.toString().trim() === "" || field === null || field === undefined))) {
         return res.status(400).json(
@@ -26,18 +26,9 @@ const registerUser = async (req, res) => {
         )
     }
 
-    existedUser = await User.findOne({ email })
-
-    if (existedUser) {
-        return res.status(409).json(
-            new ApiResponse(409, null, "user with this email already exists!")
-        )
-    }
-
     const user = await User.create({
         firstName,
         lastName,
-        email,
         username,
         password,
         role
@@ -172,15 +163,6 @@ const logoutUser = async (req, res) => {
         )
 }
 
-// const getUserDetails = async (req, res) => {
-//     const user = req.user
-
-//     return res.status(200)
-//         .json(
-//             new ApiResponse(200, user, "User details fetch successfully")
-//         )
-// }
-
 const getUserProfile = async (req, res) => {
     const userId = req.user.userId;
 
@@ -247,17 +229,6 @@ const getUserProfile = async (req, res) => {
     return res.status(200).json(
         new ApiResponse(200, user, "User profile fetch Successfully")
     );
-}
-
-const updateProfile = async (req, res) => {
-
-    // const userId = req.user.userId;
-    // const { address } = req.body()
-
-    // const user = await User.findByIdAndUpdate(
-
-    // )
-
 }
 
 const getAllStudents = async (req, res) => {
@@ -352,4 +323,4 @@ const getAllTeachers = async (req, res) => {
 }
 
 
-export { registerUser, loginUser, logoutUser, getUserProfile, getAllStudents, getAllParents, getAllTeachers, updateProfile }
+export { registerUser, loginUser, logoutUser, getUserProfile, getAllStudents, getAllParents, getAllTeachers }

@@ -89,7 +89,7 @@ const CreateUsers = () => {
     // Remove errors before sending to backend
     const payload = users.map(({ errors, ...rest }) => rest);
 
-    console.log("VALID USERS:", payload);
+    // console.log("VALID USERS:", payload);
 
     try {
 

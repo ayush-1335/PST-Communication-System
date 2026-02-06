@@ -14,13 +14,6 @@ const userSchema = new Schema(
             trim: true
         },
 
-        email: {
-            type: String,
-            unique: true,
-            sparse: true, // allows students without email
-            lowercase: true
-        },
-
         username: {
             type: String,
             required: true,

@@ -1,11 +1,9 @@
-import AssignStudentSection from "./AssignStudentSection";
-import AssignTeacherSection from "./AssignTeacherSection";
+import BulkCreateClasses from "./BulkCreateClasses";
 
 const Overview = () => {
   return (
     <>
-      <AssignStudentSection />
-      <AssignTeacherSection />
+      <BulkCreateClasses />
     </>
   )
 

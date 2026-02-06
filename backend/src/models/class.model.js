@@ -15,10 +15,17 @@ const classSchema = new mongoose.Schema({
   classTeacher: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Teacher",
-    required: true,
-    unique: true
-  }
+    // required: true,
+    // unique: true
+  },
+
+  students: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Student"
+  }]
 
 }, { timestamps: true })
+
+classSchema.index({ standard: 1, section: 1 }, { unique: true })
 
 export const Class = mongoose.model("Class", classSchema)
