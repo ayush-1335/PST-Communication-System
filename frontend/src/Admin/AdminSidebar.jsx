@@ -15,8 +15,8 @@ const AdminSidebar = () => {
       </div>
 
       <nav className="px-3 space-y-2">
-        <NavLink to="/admin" end className={linkClass}>
-          Dashboard
+        <NavLink to="/admin/overview" end className={linkClass}>
+          Overview
         </NavLink>
 
         <NavLink to="/admin/create-user" end className={linkClass}>

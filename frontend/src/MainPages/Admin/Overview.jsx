@@ -1,2 +1,14 @@
-const Overview = () => <h3>Admin Home</h3>;
+import AssignStudentSection from "./AssignStudentSection";
+import AssignTeacherSection from "./AssignTeacherSection";
+
+const Overview = () => {
+  return (
+    <>
+      <AssignStudentSection />
+      <AssignTeacherSection />
+    </>
+  )
+
+};
+
 export default Overview;

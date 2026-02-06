@@ -49,9 +49,7 @@ const Navbar = () => {
               Dashboard
             </NavLink>
 
-            {/* {user?.role === "STUDENT" && (
-              <NavLink to="/student" className={linkClass}>Dashboard</NavLink>
-            )} */}
+            
 
           </div>
 
@@ -59,12 +57,7 @@ const Navbar = () => {
           <div className="flex items-center gap-4">
             {!user ? (
               <>
-                <NavLink
-                  to="/register"
-                  className="bg-blue-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-blue-700"
-                >
-                  Register
-                </NavLink>
+                
 
                 <NavLink
                   to="/login"

@@ -24,7 +24,7 @@ function Students() {
 
         setStudents(data.data || []);
 
-        // console.log(data.data)
+        // console.log("Students :",data.data)
 
       } catch (err) {
         console.error('Error fetching students:', err);

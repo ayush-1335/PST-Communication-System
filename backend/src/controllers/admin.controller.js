@@ -8,7 +8,7 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 const bulkRegisterUsers = async (req, res) => {
     const { users } = req.body
 
-    console.log(users)
+    // console.log("Users", users)
 
     if (!Array.isArray(users) || users.length === 0) {
         return res.status(400).json(
@@ -40,8 +40,10 @@ const bulkRegisterUsers = async (req, res) => {
             }
 
             const exists = await User.findOne({
-                $or: [{ username }, { email }]
+                $or: [{ username }]
             })
+
+            // console.log("Exists ", exists)
 
             if (exists) {
                 throw new Error("User already exists")
@@ -100,4 +102,50 @@ const bulkRegisterUsers = async (req, res) => {
     )
 }
 
-export { bulkRegisterUsers }
+const assignSection = async (req, res) => {
+  try {
+    const { students } = req.body;
+
+    // 1️⃣ Basic validation
+     if (!Array.isArray(students)) {
+    return res.status(400).json({
+      message: "Students must be an array",
+    });
+  }
+
+  if (students.length === 0) {
+    return res.status(200).json({
+      message: "No changes to update",
+      updatedCount: 0,
+    });
+  }
+
+    // 2️⃣ Loop & update each student
+    for (let i = 0; i < students.length; i++) {
+      const { studentId, section } = students[i];
+
+      // skip invalid entry
+      if (!studentId || !section) continue;
+
+      await Student.findByIdAndUpdate(
+        studentId,
+        { section },
+        { new: true }
+      );
+    }
+
+    // 3️⃣ Send success response
+    return res.status(200).json({
+      message: "Sections updated successfully",
+    });
+
+  } catch (error) {
+    console.error("Assign section error:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export { bulkRegisterUsers, assignSection }

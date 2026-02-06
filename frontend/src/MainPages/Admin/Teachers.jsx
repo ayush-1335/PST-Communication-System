@@ -24,7 +24,7 @@ function Teachers() {
 
         setTeachers(data.data || []);
 
-        console.log(data.data)
+        // console.log(data.data)
 
       } catch (err) {
         console.error('Error fetching teachers:', err);

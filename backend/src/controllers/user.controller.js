@@ -242,7 +242,7 @@ const getUserProfile = async (req, res) => {
         user.subject = teacher.subject;
     }
 
-    console.log("Profile :", user);
+    // console.log("Profile :", user);
 
     return res.status(200).json(
         new ApiResponse(200, user, "User profile fetch Successfully")
@@ -251,8 +251,13 @@ const getUserProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
 
-    const userId = req.user.userId;
-    const user = await User.findById(userId).select("-password");
+    // const userId = req.user.userId;
+    // const { address } = req.body()
+
+    // const user = await User.findByIdAndUpdate(
+
+    // )
+
 }
 
 const getAllStudents = async (req, res) => {
@@ -260,11 +265,12 @@ const getAllStudents = async (req, res) => {
     // console.log("IN get all students")
 
     try {
-        const students = await Student.find()
+        const students = await Student.find({})
+            .select("standard section user _id")
             .populate({
                 path: "user",
-                select: "-password"
-            })
+                select: "firstName lastName username -_id",
+            });
 
         if (!students.length) {
             return res.status(404).json(

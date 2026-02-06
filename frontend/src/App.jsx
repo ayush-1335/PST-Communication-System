@@ -1,9 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import Login from "./Components/Login";
-import Register from "./Components/Register";
 import { useAuth } from "./context/AuthContext"
-import { PublicRoute } from "./Routes/PublicRoutes";
 import { ProtectedRoute } from "./Routes/ProtectedRoutes";
 import Dashboard from "./Components/Dashboard";
 import Profile from "./Components/Profile";
@@ -29,15 +27,6 @@ function App() {
             path="/login"
             element={
               user ? <Navigate to="/dashboard" /> : <Login />
-            }
-          />
-
-          <Route
-            path="/register"
-            element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
             }
           />
 
@@ -68,7 +57,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Overview />} />
+            <Route path="overview" element={<Overview />} />
             {/* <Route path="users" element={<AdminUsers />} /> */}
             <Route path="create-user" element={<CreateUser />} />
             <Route path="parents" element={<Parents />} />

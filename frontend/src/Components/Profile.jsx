@@ -43,7 +43,8 @@ const Profile = () => {
       city: "",
       state: "",
       pincode: ""
-    }
+    },
+    phone: user?.phone || ""
   });
 
   if (loading) return <div className="flex justify-center h-64">Loading...</div>;
@@ -51,7 +52,22 @@ const Profile = () => {
 
   const handleUpdate = () => {
     console.log("Updated data:", formData);
-    // 🔥 Call update profile API here
+
+    try {
+      const res = fetch("http://localhost:8000/users/update-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify(formData)
+      }
+      )
+
+    } catch (error) {
+      console.log("Error in Updating:", error)
+    }
+
     setIsEditing(false);
   };
 
@@ -98,6 +114,25 @@ const Profile = () => {
                       [field]: e.target.value
                     }
                   })
+                }
+              />
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {/* PARENT */}
+      {user.role === "PARENT" && (
+        <Section title="Parent Information">
+          <div className="grid grid-cols-2 gap-4">
+            {["phone"].map((field) => (
+              <input
+                key={field}
+                disabled={!isEditing}
+                value={formData.phone}
+                placeholder={field}
+                className="border px-3 py-2 rounded-md text-sm"
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })
                 }
               />
             ))}
