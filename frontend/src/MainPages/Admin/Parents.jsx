@@ -52,7 +52,6 @@ function Parents() {
               <th>Username</th>
               <th>First Name</th>
               <th>Last Name</th>
-              <th>email</th>
               <th>Phone</th>
             </tr>
           </thead>
@@ -62,7 +61,6 @@ function Parents() {
                 <td>{parents.user.username}</td>
                 <td>{parents.user?.firstName || 'N/A'}</td>
                 <td>{parents.user?.lastName || 'N/A'}</td>
-                <td>{parents.user?.email || 'N/A'}</td>
                 <td>{parents.phone || 'N/A'}</td>
               </tr>
             ))}

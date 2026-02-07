@@ -53,7 +53,7 @@ const Login = () => {
         <input
           type="text"
           name="username"
-          placeholder="Email or Username"
+          placeholder="Username"
           className="border p-2 rounded w-full"
           value={formData.username}
           onChange={handleChange}

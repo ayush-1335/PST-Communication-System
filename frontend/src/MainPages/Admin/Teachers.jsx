@@ -52,7 +52,6 @@ function Teachers() {
               <th>Username</th>
               <th>First Name</th>
               <th>Last Name</th>
-              <th>Email</th>
               <th>Subject</th>
             </tr>
           </thead>
@@ -62,7 +61,6 @@ function Teachers() {
                 <td>{teachers.user.username}</td>
                 <td>{teachers.user?.firstName || 'N/A'}</td>
                 <td>{teachers.user?.lastName || 'N/A'}</td>
-                <td>{teachers.user?.email || 'N/A'}</td>
                 <td>{teachers.subject || 'N/A'}</td>
               </tr>
             ))}

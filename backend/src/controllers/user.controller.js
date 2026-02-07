@@ -241,7 +241,11 @@ const getAllStudents = async (req, res) => {
             .populate({
                 path: "user",
                 select: "firstName lastName username -_id",
-            });
+            })
+            .populate({
+    path: "class",
+    select: "standard section"
+  })
 
         if (!students.length) {
             return res.status(404).json(

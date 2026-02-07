@@ -90,7 +90,6 @@ const Profile = () => {
           onChange={(v) => setFormData({ ...formData, lastName: v })}
         />
 
-        <Info label="Email" value={user.email} />
         <Info label="Username" value={user.username} />
         <Info label="Role" value={user.role} />
       </Section>
