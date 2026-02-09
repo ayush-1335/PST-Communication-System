@@ -89,8 +89,8 @@ function AssignStudentsToClass() {
         setSaving(true);
 
         try {
-            console.log(selectedClass)
-            console.log(selectedStudents)
+            // console.log(selectedClass)
+            // console.log(selectedStudents)
             const res = await fetch(
                 "http://localhost:8000/users/admin/assign-class-students",
                 {
@@ -106,7 +106,7 @@ function AssignStudentsToClass() {
 
             const data = await res.json();
 
-            console.log(data)
+            // console.log(data)
 
             if (!res.ok) {
                 throw new Error(data.message || "Assignment failed");

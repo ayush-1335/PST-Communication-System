@@ -185,6 +185,13 @@ const getAllClasses = async (req, res) => {
 
     const classes = await Class.find()
       .select("standard section")
+      .populate({
+        path: "classTeacher",
+        populate: {
+          path: "user",
+          select: "firstName lastName"
+        }
+      })
       .sort({ standard: 1, section: 1 });
 
     return res.status(200).json(
@@ -202,7 +209,7 @@ const assignStudentsToClass = async (req, res) => {
   const { classId, students } = req.body
 
   const session = await mongoose.startSession()
-    session.startTransaction()
+  session.startTransaction()
 
   // 1️⃣ Validation
   if (!classId) {
@@ -257,7 +264,7 @@ const assignStudentsToClass = async (req, res) => {
   )
 
   await session.commitTransaction()
-        session.endSession()
+  session.endSession()
 
 
   // 6️⃣ Success response
@@ -273,8 +280,151 @@ const assignStudentsToClass = async (req, res) => {
   )
 }
 
+const assignClassTeacher = async (req, res) => {
+  const { classId, teacherId } = req.body
+
+  // 1️⃣ Validation
+  if (!classId || !teacherId) {
+    return res.status(400).json(
+      new ApiResponse(400, null, "classId and teacherId are required")
+    )
+  }
+
+  try {
+    const classDoc = await Class.findById(classId)
+    if (!classDoc) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Class not found", false)
+      )
+    }
+
+    const teacherDoc = await Teacher.findById(teacherId)
+      .populate({
+        path: "user",
+        select: "firstName lastName"
+      })
+    if (!teacherDoc) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Teacher not found", false)
+      )
+    }
+
+    if (classDoc.classTeacher?.toString() === teacherId) {
+      return res.status(200).json(
+        new ApiResponse(
+          200,
+          null,
+          "Teacher already assigned as class teacher"
+        )
+      )
+    }
+
+    const alreadyClassTeacher = await Class.findOne({
+      classTeacher: teacherId
+    });
+
+    if (alreadyClassTeacher) {
+      return res.status(400).json(
+        new ApiResponse(
+          400,
+          {
+            currentClass: `${alreadyClassTeacher.standard}-${alreadyClassTeacher.section}`
+          },
+          "Teacher is already assigned as class teacher to another class",
+          false
+        )
+      );
+    }
+
+    classDoc.classTeacher = teacherId
+    await classDoc.save()
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          class: `${classDoc.standard}-${classDoc.section}`,
+          classTeacher: `${teacherDoc.user.firstName} ${teacherDoc.user.lastName}`
+        },
+        "Class teacher assigned successfully"
+      )
+    )
+
+  } catch (error) {
+    return res.status(500).json(
+      new ApiResponse(500, null, error.message, false)
+    )
+  }
+}
+
+const assignTeacherClasses = async (req, res) => {
+  const { teacherId, classIds } = req.body
+
+  try {
+
+    const teacher = await Teacher.findById(teacherId)
+
+    if (!teacher) {
+      return res.status(404).json(
+        new ApiResponse(500, null, "Teacher not found", false)
+      )
+    }
+
+    const existingClasses = await Class.find({
+      _id: { $in: classIds }
+    }).select("_id");
+
+    if (existingClasses.length !== classIds.length) {
+      return res.status(404).json(
+        new ApiResponse(
+          404,
+          null,
+          "One or more classes do not exist",
+          false
+        )
+      );
+    }
+
+    await Teacher.findByIdAndUpdate(
+      teacherId,
+      {
+        $addToSet: {
+          classes: { $each : classIds }
+        }
+      },
+      { new: true }
+    )
+
+    const updatedTeacher = await Teacher.findById(teacherId)
+    .populate({
+      path: "user",
+      select: "firstName lastName"
+    })
+    .populate({
+      path: "classes",
+      select: "standard section"
+    })
+
+    const { firstName, lastName } = updatedTeacher.user;
+
+      return res.status(200).json(
+        new ApiResponse(
+          200,
+          {
+            teacher: `${firstName} ${lastName}`,
+            classes: updatedTeacher.classes
+          }
+        )
+      )
+    
 
 
+  } catch (error) {
+    return res.status(500).json(
+      new ApiResponse(500, null, error.message, false)
+    );
+  }
 
+}
 
-export { bulkRegisterUsers, getAllClasses, bulkCreateClasses, assignStudentsToClass }
+export { bulkRegisterUsers, getAllClasses, bulkCreateClasses, assignStudentsToClass, assignClassTeacher, assignTeacherClasses }

@@ -2,7 +2,7 @@ import { useAuth } from "../context/AuthContext";
 import StudentDashboard from "../MainPages/Student/StudentDashboard";
 import TeacherDashboard from "../MainPages/Teacher/TeacherDashboard";
 import ParentDashboard from "../MainPages/Parent/ParentDashboard";
-import AdminDashboard from "../Admin/AdminDashboard";
+import AdminDashboard from "../MainPages/Admin/AdminDashboard";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();

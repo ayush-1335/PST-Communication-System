@@ -51,7 +51,7 @@ const registerUser = async (req, res) => {
             address
         })
 
-        console.log(student)
+        // console.log(student)
     }
 
     if (role === "TEACHER") {

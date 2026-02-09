@@ -1,17 +1,25 @@
-import React from 'react'
-import { useAuth } from '../../context/AuthContext'
+import { Outlet } from "react-router-dom";
+import TeacherSidebar from "./TeacherSidebar";
+import TeacherTopbar from "./TeacherTopbar";
 
-function TeacherDashboard() {
-
-  
-
+const TeacherDashboard = () => {
   return (
-     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Teacher Dashboard</h1>
+    <div className="flex min-h-screen bg-gray-100">
+      
+      {/* Sidebar */}
+      <TeacherSidebar />
 
+      {/* Main content */}
+      <div className="flex-1 flex flex-col">
+        <TeacherTopbar />
+
+        <main className="flex-1 p-6">
+          {/* 🔥 CHILD ROUTES RENDER HERE */}
+          <Outlet />
+        </main>
+      </div>
     </div>
+  );
+};
 
-  )
-}
-
-export default TeacherDashboard
+export default TeacherDashboard;

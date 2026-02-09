@@ -5,12 +5,20 @@ import { useAuth } from "./context/AuthContext"
 import { ProtectedRoute } from "./Routes/ProtectedRoutes";
 import Dashboard from "./Components/Dashboard";
 import Profile from "./Components/Profile";
-import AdminDashboard from "./Admin/AdminDashboard";
+
+//Admin routes
+import AdminDashboard from "./MainPages/Admin/AdminDashboard";
 import Overview from "./MainPages/Admin/Overview"
 import CreateUser from "./MainPages/Admin/CreateUser"
 import Students from "./MainPages/Admin/Students"
 import Parents from "./MainPages/Admin/Parents"
 import Teachers from "./MainPages/Admin/Teachers"
+
+//Teacher routes
+import TeacherDashboard from "./MainPages/Teacher/TeacherDashboard";
+import TeacherHome from "./MainPages/Teacher/TeacherHome";
+import MyClasses from "./MainPages/Teacher/MyClasses";
+import MyStudents from "./MainPages/Teacher/MyStudents";
 
 function App() {
 
@@ -58,11 +66,23 @@ function App() {
             }
           >
             <Route path="overview" element={<Overview />} />
-            {/* <Route path="users" element={<AdminUsers />} /> */}
             <Route path="create-user" element={<CreateUser />} />
             <Route path="parents" element={<Parents />} />
             <Route path="students" element={<Students />} />
             <Route path="teachers" element={<Teachers />} />
+          </Route>
+
+          <Route
+            path="/teacher"
+            element={
+              <ProtectedRoute allowedRoles={["TEACHER"]}>
+                <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<TeacherHome />} />
+            <Route path="classes" element={ <MyClasses /> } />
+            <Route path="students" element={<MyStudents />} />
           </Route>
 
 

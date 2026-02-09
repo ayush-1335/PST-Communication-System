@@ -1,6 +1,6 @@
 import {Router} from "express"
 import authMiddleware from "../middleware/auth.middleware.js"
-import { assignStudentsToClass, bulkCreateClasses, bulkRegisterUsers, getAllClasses } from "../controllers/admin.controller.js"
+import {bulkCreateClasses, bulkRegisterUsers, getAllClasses, assignStudentsToClass, assignClassTeacher, assignTeacherClasses } from "../controllers/admin.controller.js"
 
 const router = Router()
 
@@ -8,5 +8,7 @@ router.post("/bulk-register", authMiddleware, bulkRegisterUsers)
 router.post("/create-class", authMiddleware, bulkCreateClasses)
 router.get("/class-info", authMiddleware, getAllClasses)
 router.put("/assign-class-students", authMiddleware, assignStudentsToClass)
+router.put("/assign-class-teacher", authMiddleware, assignClassTeacher)
+router.put("/assign-teacher-classes", authMiddleware, assignTeacherClasses)
 
 export default router
