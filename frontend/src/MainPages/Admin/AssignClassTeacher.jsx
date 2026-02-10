@@ -94,6 +94,37 @@ const AssignClassTeacher = () => {
     }
   };
 
+  // const removeClassTeacher = async (classId) => {
+  // if (!window.confirm("Remove class teacher from this class?")) return;
+
+  // setLoading(true);
+  // setError("");
+  // setSuccess("");
+
+  // try {
+  //   const res = await fetch(
+  //     "http://localhost:8000/users/admin/remove-class-teacher",
+  //     {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       credentials: "include",
+  //       body: JSON.stringify({ classId }),
+  //     }
+  //   );
+
+  //   const data = await res.json();
+  //   if (!res.ok) throw new Error(data.message);
+
+  //   setSuccess("Class teacher removed successfully");
+  //   fetchClasses(); // 🔁 refresh table
+  // } catch (err) {
+  //   setError(err.message);
+  // } finally {
+  //   setLoading(false);
+  // }
+  // };
+
+
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white rounded-xl shadow">
       <h2 className="text-2xl font-semibold mb-6">
@@ -258,6 +289,23 @@ const AssignClassTeacher = () => {
                       </span>
                     )}
                   </td>
+
+                  {/* <td className="px-4 py-3">
+                    {cls.classTeacher ? (
+                      <button
+                        onClick={() => removeClassTeacher(cls._id)}
+                        className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs hover:bg-red-200"
+                        disabled={loading}
+                      >
+                        Remove
+                      </button>
+                    ) : (
+                      <span className="text-gray-400 text-xs">
+                        -
+                      </span>
+                    )}
+                  </td> */}
+
                 </tr>
               ))}
             </tbody>

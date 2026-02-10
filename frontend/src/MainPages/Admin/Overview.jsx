@@ -7,8 +7,11 @@ const Overview = () => {
   return (
     <>
       <BulkCreateClasses />
+      <br />
       <AssignClassTeacher />
+      <br />
       <AssignTeacherClasses />
+      <br />
       <AssignStudentsToClass />
     </>
   )

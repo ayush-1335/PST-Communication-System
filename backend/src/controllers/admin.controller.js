@@ -357,13 +357,87 @@ const assignClassTeacher = async (req, res) => {
   }
 }
 
+const removeClassTeacher = async (req, res) => {
+  const { classId } = req.body
+
+  console.log(classId)
+
+  if (!classId) {
+    return res.status(400).json(
+      new ApiResponse(400, null, "Class Id required", false)
+    )
+  }
+
+  try {
+
+    const classDoc = await Class.findById(classId)
+      .select("standard section classTeacher")
+      .populate({
+        path: "classTeacher",
+        select: "user",
+        populate: {
+          path: "user",
+          select: "firstName lastName"
+        }
+      }
+      )
+
+    if (!classDoc) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Class not found", false)
+      )
+    }
+
+    if (!classDoc.classTeacher) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "No class teacher assigned", false)
+      );
+    }
+
+    const { standard, section } = classDoc;
+    const { firstName, lastName } = classDoc.classTeacher.user;
+
+    classDoc.classTeacher = null;
+    await classDoc.save();
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          teacher: `${firstName} ${lastName}`,
+          class: `${standard} - ${section}`
+        },
+        `Class Teacher ${firstName} ${lastName} removed from ${standard} - ${section}`
+      )
+    )
+
+  } catch (error) {
+    return res.status(500).json(
+      new ApiResponse(500, null, error.message, false)
+    );
+  }
+
+
+
+}
+
 const assignTeacherClasses = async (req, res) => {
   const { teacherId, classIds } = req.body
+
+  if (!teacherId || !Array.isArray(classIds) || classIds.length === 0) {
+    return res.status(400).json(
+      new ApiResponse(
+        400,
+        null,
+        "teacherId and classIds array are required",
+        false
+      )
+    );
+  }
 
   try {
 
     const teacher = await Teacher.findById(teacherId)
-
     if (!teacher) {
       return res.status(404).json(
         new ApiResponse(500, null, "Teacher not found", false)
@@ -373,7 +447,6 @@ const assignTeacherClasses = async (req, res) => {
     const existingClasses = await Class.find({
       _id: { $in: classIds }
     }).select("_id");
-
     if (existingClasses.length !== classIds.length) {
       return res.status(404).json(
         new ApiResponse(
@@ -385,38 +458,32 @@ const assignTeacherClasses = async (req, res) => {
       );
     }
 
-    await Teacher.findByIdAndUpdate(
-      teacherId,
-      {
-        $addToSet: {
-          classes: { $each : classIds }
-        }
-      },
-      { new: true }
-    )
+    teacher.classes = classIds
+    await teacher.save()
 
     const updatedTeacher = await Teacher.findById(teacherId)
-    .populate({
-      path: "user",
-      select: "firstName lastName"
-    })
-    .populate({
-      path: "classes",
-      select: "standard section"
-    })
+      .populate({
+        path: "user",
+        select: "firstName lastName"
+      })
+      .populate({
+        path: "classes",
+        select: "standard section"
+      })
 
     const { firstName, lastName } = updatedTeacher.user;
 
-      return res.status(200).json(
-        new ApiResponse(
-          200,
-          {
-            teacher: `${firstName} ${lastName}`,
-            classes: updatedTeacher.classes
-          }
-        )
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          teacher: `${firstName} ${lastName}`,
+          classes: updatedTeacher.classes
+        },
+        "Teacher assigned to classes sucessfully"
       )
-    
+    )
+
 
 
   } catch (error) {
@@ -427,4 +494,4 @@ const assignTeacherClasses = async (req, res) => {
 
 }
 
-export { bulkRegisterUsers, getAllClasses, bulkCreateClasses, assignStudentsToClass, assignClassTeacher, assignTeacherClasses }
+export { bulkRegisterUsers, getAllClasses, bulkCreateClasses, assignStudentsToClass, assignClassTeacher, removeClassTeacher, assignTeacherClasses }

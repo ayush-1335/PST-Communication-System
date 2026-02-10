@@ -89,6 +89,7 @@ const AssignTeacherClasses = () => {
             }
 
             setSuccess(data.message || "Classes assigned to teacher successfully");
+            await fetchTeachers()
 
             setSelectedTeacher("");
             setSelectedClasses([]);
@@ -118,7 +119,15 @@ const AssignTeacherClasses = () => {
                 </label>
                 <select
                     value={selectedTeacher}
-                    onChange={(e) => setSelectedTeacher(e.target.value)}
+                    onChange={(e) => {
+                        const teacherId = e.target.value;
+                        setSelectedTeacher(teacherId);
+
+                        const teacherObj = teachers.find(t => t._id === teacherId);
+
+                        // 🔥 preload assigned classes
+                        setSelectedClasses(teacherObj?.classes || []);
+                    }}
                     className="w-full border rounded-lg px-3 py-2"
                 >
                     <option value="">-- Select Teacher --</option>
@@ -168,7 +177,11 @@ const AssignTeacherClasses = () => {
                 disabled={loading}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60"
             >
-                {loading ? "Assigning..." : "Assign Classes"}
+                {loading
+                    ? "Saving..."
+                    : selectedTeacher
+                        ? "Update Teacher Classes"
+                        : "Assign Classes"}
             </button>
         </div>
     );
