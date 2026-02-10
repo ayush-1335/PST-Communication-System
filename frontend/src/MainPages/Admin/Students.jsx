@@ -8,7 +8,7 @@ function Students() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await fetch('http://localhost:8000/users/students', {
+        const response = await fetch('http://localhost:3000/users/admin/students', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

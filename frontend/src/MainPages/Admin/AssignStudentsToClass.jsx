@@ -13,7 +13,7 @@ function AssignStudentsToClass() {
     const [success, setSuccess] = useState("");
 
     const fetchStudents = async () => {
-        const res = await fetch("http://localhost:8000/users/students", {
+        const res = await fetch("http://localhost:3000/users/students", {
             credentials: "include",
         });
 
@@ -31,10 +31,10 @@ function AssignStudentsToClass() {
         const fetchData = async () => {
             try {
                 const [classRes, studentRes] = await Promise.all([
-                    fetch("http://localhost:8000/users/admin/class-info", {
+                    fetch("http://localhost:3000/users/admin/class-info", {
                         credentials: "include",
                     }),
-                    fetch("http://localhost:8000/users/students", {
+                    fetch("http://localhost:3000/users/admin/students", {
                         credentials: "include",
                     }),
                 ]);
@@ -92,7 +92,7 @@ function AssignStudentsToClass() {
             // console.log(selectedClass)
             // console.log(selectedStudents)
             const res = await fetch(
-                "http://localhost:8000/users/admin/assign-class-students",
+                "http://localhost:3000/users/admin/assign-class-students",
                 {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },

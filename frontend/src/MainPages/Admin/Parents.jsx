@@ -8,7 +8,7 @@ function Parents() {
   useEffect(() => {
     const fetchParents = async () => {
       try {
-        const response = await fetch('http://localhost:8000/users/parents', {
+        const response = await fetch('http://localhost:3000/users/admin/parents', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

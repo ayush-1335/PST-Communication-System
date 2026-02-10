@@ -14,7 +14,7 @@ const MyStudents = () => {
   const fetchMyStudents = async () => {
     try {
       const res = await fetch(
-        "http://localhost:8000/users/teacher/my-students",
+        "http://localhost:3000/users/teacher/my-students",
         {
           method: "GET",
           credentials: "include",

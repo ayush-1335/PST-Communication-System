@@ -93,7 +93,7 @@ const CreateUsers = () => {
 
     try {
 
-      const res = await fetch("http://localhost:8000/users/admin/bulk-register", {
+      const res = await fetch("http://localhost:3000/users/admin/bulk-register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

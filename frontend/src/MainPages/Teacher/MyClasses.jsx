@@ -12,7 +12,7 @@ const MyClasses = () => {
   const fetchMyClasses = async () => {
   try {
     const res = await fetch(
-      "http://localhost:8000/users/teacher/my-classes",
+      "http://localhost:3000/users/teacher/my-classes",
       { credentials: "include" }
     );
 

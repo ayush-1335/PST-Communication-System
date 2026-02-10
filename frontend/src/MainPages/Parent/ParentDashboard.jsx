@@ -20,7 +20,7 @@ const ParentDashboard = () => {
 
     try {
 
-      const response = await fetch("http://localhost:8000/users/parent/parent-student",
+      const response = await fetch("http://localhost:3000/users/parent/parent-student",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

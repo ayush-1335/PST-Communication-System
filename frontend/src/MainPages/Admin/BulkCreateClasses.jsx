@@ -47,7 +47,7 @@ function BulkCreateClasses() {
 
     try {
       const res = await fetch(
-        "http://localhost:8000/users/admin/create-class",
+        "http://localhost:3000/users/admin/create-class",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

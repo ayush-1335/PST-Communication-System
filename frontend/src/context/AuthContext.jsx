@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
         const fetchProfile = async () => {
             setLoading(true)
             try {
-                const res = await fetch("http://localhost:8000/users/profile", {
+                const res = await fetch("http://localhost:3000/users/profile", {
                     method: "GET",
                     credentials: "include",
                 });
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(true)
 
         try {
-            const response = await fetch("http://localhost:8000/users/login",
+            const response = await fetch("http://localhost:3000/users/login",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
             setLoading(true)
 
             try {
-                const response = await fetch("http://localhost:8000/users/logout",
+                const response = await fetch("http://localhost:3000/users/logout",
                     {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },

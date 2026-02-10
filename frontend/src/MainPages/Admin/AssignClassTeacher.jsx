@@ -24,7 +24,7 @@ const AssignClassTeacher = () => {
   }, []);
 
   const fetchClasses = async () => {
-    const res = await fetch("http://localhost:8000/users/admin/class-info", {
+    const res = await fetch("http://localhost:3000/users/admin/class-info", {
       credentials: "include",
     });
     const data = await res.json();
@@ -32,7 +32,7 @@ const AssignClassTeacher = () => {
   };
 
   const fetchTeachers = async () => {
-    const res = await fetch("http://localhost:8000/users/teachers", {
+    const res = await fetch("http://localhost:3000/users/admin/teachers", {
       credentials: "include",
     });
     const data = await res.json();
@@ -63,7 +63,7 @@ const AssignClassTeacher = () => {
 
     try {
       const res = await fetch(
-        "http://localhost:8000/users/admin/assign-class-teacher",
+        "http://localhost:3000/users/admin/assign-class-teacher",
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -94,35 +94,35 @@ const AssignClassTeacher = () => {
     }
   };
 
-  // const removeClassTeacher = async (classId) => {
-  // if (!window.confirm("Remove class teacher from this class?")) return;
+  const removeClassTeacher = async (classId) => {
+  if (!window.confirm("Remove class teacher from this class?")) return;
 
-  // setLoading(true);
-  // setError("");
-  // setSuccess("");
+  setLoading(true);
+  setError("");
+  setSuccess("");
 
-  // try {
-  //   const res = await fetch(
-  //     "http://localhost:8000/users/admin/remove-class-teacher",
-  //     {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       credentials: "include",
-  //       body: JSON.stringify({ classId }),
-  //     }
-  //   );
+  try {
+    const res = await fetch(
+      "http://localhost:3000/users/admin/remove-class-teacher",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ classId }),
+      }
+    );
 
-  //   const data = await res.json();
-  //   if (!res.ok) throw new Error(data.message);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
 
-  //   setSuccess("Class teacher removed successfully");
-  //   fetchClasses(); // 🔁 refresh table
-  // } catch (err) {
-  //   setError(err.message);
-  // } finally {
-  //   setLoading(false);
-  // }
-  // };
+    setSuccess("Class teacher removed successfully");
+    fetchClasses(); // 🔁 refresh table
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+  };
 
 
   return (
@@ -290,7 +290,7 @@ const AssignClassTeacher = () => {
                     )}
                   </td>
 
-                  {/* <td className="px-4 py-3">
+                  <td className="px-4 py-3">
                     {cls.classTeacher ? (
                       <button
                         onClick={() => removeClassTeacher(cls._id)}
@@ -304,7 +304,7 @@ const AssignClassTeacher = () => {
                         -
                       </span>
                     )}
-                  </td> */}
+                  </td>
 
                 </tr>
               ))}

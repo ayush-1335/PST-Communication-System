@@ -7,11 +7,7 @@ const authMiddleware = async(req, res, next) => {
         const token = req.cookies?.accessToken || req.headers.authorization?.replace("Bearer ", "")
 
         if(!token){
-            return res
-            .status(401)
-            .json(
-                new ApiResponse(401, null, "Unauthorized!", false)
-            )
+            return res.status(401).json({ success: false, message: "Unauthorized!" });
         }
 
         const decoded = jwt.verify(

@@ -19,7 +19,7 @@ const AssignTeacherClasses = () => {
     }, []);
 
     const fetchTeachers = async () => {
-        const res = await fetch("http://localhost:8000/users/teachers", {
+        const res = await fetch("http://localhost:3000/users/admin/teachers", {
             credentials: "include",
         });
         const data = await res.json();
@@ -27,7 +27,7 @@ const AssignTeacherClasses = () => {
     };
 
     const fetchClasses = async () => {
-        const res = await fetch("http://localhost:8000/users/admin/class-info", {
+        const res = await fetch("http://localhost:3000/users/admin/class-info", {
             credentials: "include",
         });
         const data = await res.json();
@@ -66,7 +66,7 @@ const AssignTeacherClasses = () => {
             setLoading(true);
 
             const res = await fetch(
-                "http://localhost:8000/users/admin/assign-teacher-classes",
+                "http://localhost:3000/users/admin/assign-teacher-classes",
                 {
                     method: "PUT",
                     headers: {

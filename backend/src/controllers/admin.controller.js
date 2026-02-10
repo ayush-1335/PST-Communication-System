@@ -107,6 +107,101 @@ const bulkRegisterUsers = async (req, res) => {
   )
 }
 
+const getAllStudents = async (req, res) => {
+
+    // console.log("IN get all students")
+
+    try {
+        const students = await Student.find({})
+            .select("standard section user _id")
+            .populate({
+                path: "user",
+                select: "firstName lastName username -_id",
+            })
+            .populate({
+    path: "class",
+    select: "standard section"
+  })
+
+        if (!students.length) {
+            return res.status(404).json(
+                new ApiResponse(404, [], "No students found")
+            )
+        }
+
+        // console.log(students)
+
+        return res.status(200).json(
+            new ApiResponse(200, students, "Students fetched successfully")
+        )
+    } catch (error) {
+        console.error("Error fetching students:", error)
+        return res.status(500).json(
+            new ApiResponse(500, null, "Internal server error", false)
+        )
+    }
+}
+
+const getAllParents = async (req, res) => {
+
+    // console.log("IN get all parents")
+
+    try {
+        const parents = await Parent.find()
+            .populate({
+                path: "user",
+                select: "-password"
+            })
+
+        if (!parents.length) {
+            return res.status(404).json(
+                new ApiResponse(404, [], "No parents found")
+            )
+        }
+
+        // console.log(parents)
+
+        return res.status(200).json(
+            new ApiResponse(200, parents, "Parents fetched successfully")
+        )
+    } catch (error) {
+        console.error("Error fetching parents:", error)
+        return res.status(500).json(
+            new ApiResponse(500, null, "Internal server error", false)
+        )
+    }
+}
+
+const getAllTeachers = async (req, res) => {
+
+    // console.log("IN get all teachers")
+
+    try {
+        const teachers = await Teacher.find()
+            .populate({
+                path: "user",
+                select: "-password"
+            })
+
+        if (!teachers.length) {
+            return res.status(404).json(
+                new ApiResponse(404, [], "No teachers found")
+            )
+        }
+
+        // console.log(teachers)
+
+        return res.status(200).json(
+            new ApiResponse(200, teachers, "Teachers fetched successfully")
+        )
+    } catch (error) {
+        console.error("Error fetching teachers:", error)
+        return res.status(500).json(
+            new ApiResponse(500, null, "Internal server error", false)
+        )
+    }
+}
+
 const bulkCreateClasses = async (req, res) => {
   const { classes } = req.body
 
@@ -494,4 +589,4 @@ const assignTeacherClasses = async (req, res) => {
 
 }
 
-export { bulkRegisterUsers, getAllClasses, bulkCreateClasses, assignStudentsToClass, assignClassTeacher, removeClassTeacher, assignTeacherClasses }
+export { bulkRegisterUsers, getAllStudents, getAllParents, getAllTeachers , getAllClasses, bulkCreateClasses, assignStudentsToClass, assignClassTeacher, removeClassTeacher, assignTeacherClasses }
