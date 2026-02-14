@@ -1,73 +1,108 @@
-import React, { useState, useEffect } from 'react';
+import React from "react";
+import { useAdmin } from "../../context/AdminContext";
 
 function Students() {
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { students, loading, error, refreshAdminData } = useAdmin();
 
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/users/admin/students', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <p className="text-gray-600 text-lg animate-pulse">
+          Loading students...
+        </p>
+      </div>
+    );
+  }
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        setStudents(data.data || []);
-
-        // console.log("Students :",data.data)
-
-      } catch (err) {
-        console.error('Error fetching students:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStudents();
-  }, []);
-
-  if (loading) return <p>Loading students...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (error) {
+    return (
+      <div className="bg-red-100 text-red-600 p-4 rounded-lg">
+        Error: {error}
+      </div>
+    );
+  }
 
   return (
-    <>
-      <h3>View All Students</h3>
+    <div className="bg-white shadow-lg rounded-2xl p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-2xl font-semibold text-gray-800">
+          View All Students
+        </h3>
+
+        <button
+          onClick={refreshAdminData}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          Refresh
+        </button>
+      </div>
+
       {students.length === 0 ? (
-        <p>No students found.</p>
+        <div className="text-center text-gray-500 py-10">
+          No students found.
+        </div>
       ) : (
-        <table border="1" cellPadding="8">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Class</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((student) => (
-              <tr key={student.user.username}>
-                <td>{student.user.username}</td>
-                <td>{student.user?.firstName || 'N/A'}</td>
-                <td>{student.user?.lastName || 'N/A'}</td>
-                <td>{student.standard || 'N/A'}</td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Username
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  First Name
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Last Name
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Class
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody className="divide-y divide-gray-200">
+              {
+              [...students]
+                .sort((a, b) => {
+                  // If no class assigned, push to bottom
+                  if (!a.class && !b.class) return 0;
+                  if (!a.class) return 1;
+                  if (!b.class) return -1;
+
+                  // 1️⃣ Compare standard (number)
+                  if (a.class.standard !== b.class.standard) {
+                    return a.class.standard - b.class.standard;
+                  }
+
+                  // 2️⃣ Compare section (string)
+                  return a.class.section.localeCompare(b.class.section);
+                })
+              .map((student) => (
+                <tr
+                  key={student.user?.username}
+                  className="hover:bg-gray-50 transition"
+                >
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {student.user?.username || "N/A"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {student.user?.firstName || "N/A"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {student.user?.lastName || "N/A"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {student.standard || "N/A"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </>
+    </div>
   );
 }
 

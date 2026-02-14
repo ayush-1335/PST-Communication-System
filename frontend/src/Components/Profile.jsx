@@ -54,7 +54,7 @@ const Profile = () => {
     console.log("Updated data:", formData);
 
     try {
-      const res = fetch("http://localhost:3000/users/update-profile", {
+      const res = fetch("http://localhost:5000/users/update-profile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

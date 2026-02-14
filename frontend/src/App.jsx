@@ -13,12 +13,21 @@ import CreateUser from "./MainPages/Admin/CreateUser"
 import Students from "./MainPages/Admin/Students"
 import Parents from "./MainPages/Admin/Parents"
 import Teachers from "./MainPages/Admin/Teachers"
+import { AdminProvider } from "./context/AdminContext"
 
 //Teacher routes
 import TeacherDashboard from "./MainPages/Teacher/TeacherDashboard";
 import TeacherHome from "./MainPages/Teacher/TeacherHome";
 import MyClasses from "./MainPages/Teacher/MyClasses";
 import MyStudents from "./MainPages/Teacher/MyStudents";
+import { TeacherProvider } from "./context/TeacherContext";
+import MarkAttendance from "./MainPages/Teacher/Attendance/MarkAttendance";
+
+//Student routes
+import StudentDashboard from "./MainPages/Student/StudentDashboard";
+import StudentHome from "./MainPages/Student/StudentHome";
+import MyAttendance from "./MainPages/Student/MyAttendance";
+import { StudentProvider } from "./context/StudentContext";
 
 function App() {
 
@@ -57,11 +66,14 @@ function App() {
             }
           />
 
+          //Admin routes
           <Route
             path="/admin"
             element={
               <ProtectedRoute allowedRoles={["ADMIN"]}>
-                <AdminDashboard />
+                <AdminProvider>
+                  <AdminDashboard />;
+                </AdminProvider>
               </ProtectedRoute>
             }
           >
@@ -71,18 +83,37 @@ function App() {
             <Route path="students" element={<Students />} />
             <Route path="teachers" element={<Teachers />} />
           </Route>
-
+          
+          // Teacher routes
           <Route
             path="/teacher"
             element={
               <ProtectedRoute allowedRoles={["TEACHER"]}>
-                <TeacherDashboard />
+                <TeacherProvider>
+                  <TeacherDashboard />
+                </TeacherProvider>
               </ProtectedRoute>
             }
           >
             <Route index element={<TeacherHome />} />
-            <Route path="classes" element={ <MyClasses /> } />
+            <Route path="classes" element={<MyClasses />} />
             <Route path="students" element={<MyStudents />} />
+            <Route path="attendance" element={<MarkAttendance />} />
+          </Route>
+          
+          // Student routes
+          <Route
+            path="/student"
+            element={
+              <ProtectedRoute allowedRoles={["STUDENT"]}>
+                <StudentProvider>
+                  <StudentDashboard />
+                </StudentProvider>
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={ <StudentHome /> } />
+            <Route path="view-attendance" element={<MyAttendance />} />
           </Route>
 
 

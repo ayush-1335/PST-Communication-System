@@ -1,40 +1,9 @@
-import { useEffect, useState } from "react";
+import { useTeacher } from "../../context/TeacherContext"; // ✅ NEW IMPORT
 
 const MyStudents = () => {
-  const [students, setStudents] = useState([]);
-  const [className, setClassName] = useState("");
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    fetchMyStudents();
-  }, []);
-
-  const fetchMyStudents = async () => {
-    try {
-      const res = await fetch(
-        "http://localhost:3000/users/teacher/my-students",
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to fetch students");
-      }
-
-      setStudents(data.data.students || []);
-      setClassName(data.data.class || "");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // ✅ GET DATA FROM CONTEXT INSTEAD OF FETCH
+  const { students, classInfo, loading, error } = useTeacher();
 
   if (loading) {
     return (
@@ -61,7 +30,7 @@ const MyStudents = () => {
             My Students
           </h2>
           <p className="text-sm text-gray-500">
-            Class: <span className="font-medium">{className}</span>
+            Class: <span className="font-medium">{classInfo.class}</span> {/* ✅ changed */}
           </p>
         </div>
 

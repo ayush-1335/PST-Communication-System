@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useAdmin } from "../../context/AdminContext";
 
 const AssignClassTeacher = () => {
-  const [classes, setClasses] = useState([]);
-  const [teachers, setTeachers] = useState([]);
+  const { classes, teachers, refreshAdminData } = useAdmin();
 
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState("");
@@ -15,29 +15,6 @@ const AssignClassTeacher = () => {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  /* ================= FETCH DATA ================= */
-
-  useEffect(() => {
-    fetchClasses();
-    fetchTeachers();
-  }, []);
-
-  const fetchClasses = async () => {
-    const res = await fetch("http://localhost:3000/users/admin/class-info", {
-      credentials: "include",
-    });
-    const data = await res.json();
-    setClasses(data.data || []);
-  };
-
-  const fetchTeachers = async () => {
-    const res = await fetch("http://localhost:3000/users/admin/teachers", {
-      credentials: "include",
-    });
-    const data = await res.json();
-    setTeachers(data.data || []);
-  };
 
   /* ================= ASSIGN LOGIC ================= */
 
@@ -63,7 +40,7 @@ const AssignClassTeacher = () => {
 
     try {
       const res = await fetch(
-        "http://localhost:3000/users/admin/assign-class-teacher",
+        "http://localhost:5000/users/admin/assign-class-teacher",
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -76,16 +53,18 @@ const AssignClassTeacher = () => {
       );
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.message);
 
       setSuccess(data.message);
+
+      // Reset form
       setSelectedClass("");
       setSelectedTeacher("");
       setSelectedClassObj(null);
       setSelectedTeacherObj(null);
 
-      fetchClasses(); // 🔁 refresh table
+      // 🔁 Refresh context data
+      refreshAdminData();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -95,51 +74,61 @@ const AssignClassTeacher = () => {
   };
 
   const removeClassTeacher = async (classId) => {
-  if (!window.confirm("Remove class teacher from this class?")) return;
+    if (!window.confirm("Remove class teacher from this class?")) return;
 
-  setLoading(true);
-  setError("");
-  setSuccess("");
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
-  try {
-    const res = await fetch(
-      "http://localhost:3000/users/admin/remove-class-teacher",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ classId }),
-      }
-    );
+    try {
+      const res = await fetch(
+        "http://localhost:5000/users/admin/remove-class-teacher",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ classId }),
+        }
+      );
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
 
-    setSuccess("Class teacher removed successfully");
-    fetchClasses(); // 🔁 refresh table
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
+      setSuccess("Class teacher removed successfully");
+
+      // 🔁 Refresh context
+      refreshAdminData();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white rounded-xl shadow">
+    <div className="max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow">
       <h2 className="text-2xl font-semibold mb-6">
         Assign Class Teacher
       </h2>
 
-      {error && <p className="text-red-600 mb-3">{error}</p>}
-      {success && <p className="text-green-600 mb-3">{success}</p>}
+      {error && (
+        <div className="mb-4 bg-red-50 text-red-600 px-4 py-2 rounded">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-4 bg-green-50 text-green-600 px-4 py-2 rounded">
+          {success}
+        </div>
+      )}
 
       {/* ================= FORM ================= */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {/* CLASS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+        {/* CLASS SELECT */}
         <div>
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-2">
             Select Class
           </label>
           <select
@@ -149,7 +138,7 @@ const AssignClassTeacher = () => {
               setSelectedClass(id);
               setSelectedClassObj(classes.find((c) => c._id === id));
             }}
-            className="w-full border rounded-lg px-3 py-2"
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
           >
             <option value="">-- Select Class --</option>
             {classes.map((cls) => (
@@ -160,9 +149,9 @@ const AssignClassTeacher = () => {
           </select>
         </div>
 
-        {/* TEACHER */}
+        {/* TEACHER SELECT */}
         <div>
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-2">
             Select Teacher
           </label>
           <select
@@ -174,7 +163,7 @@ const AssignClassTeacher = () => {
                 teachers.find((t) => t._id === id)
               );
             }}
-            className="w-full border rounded-lg px-3 py-2"
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
           >
             <option value="">-- Select Teacher --</option>
             {teachers.map((t) => (
@@ -191,14 +180,14 @@ const AssignClassTeacher = () => {
         disabled={loading}
         className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60"
       >
-        {loading ? "Assigning..." : "Assign Class Teacher"}
+        {loading ? "Processing..." : "Assign Class Teacher"}
       </button>
 
       {/* ================= CONFIRM MODAL ================= */}
 
       {showConfirm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-full max-w-md p-6">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
             <h3 className="text-lg font-semibold mb-4">
               Change Class Teacher?
             </h3>
@@ -210,8 +199,8 @@ const AssignClassTeacher = () => {
               </p>
               <p>
                 <b>Current:</b>{" "}
-                {selectedClassObj.classTeacher.user.firstName}{" "}
-                {selectedClassObj.classTeacher.user.lastName}
+                {selectedClassObj.classTeacher?.user.firstName}{" "}
+                {selectedClassObj.classTeacher?.user.lastName}
               </p>
               <p>
                 <b>New:</b>{" "}
@@ -238,20 +227,21 @@ const AssignClassTeacher = () => {
         </div>
       )}
 
-      {/* ================= 🟢 CLASS TABLE ================= */}
+      {/* ================= CLASS TABLE ================= */}
 
-      <div className="mt-10">
+      <div className="mt-12">
         <h3 className="text-xl font-semibold mb-4">
-          Class & Class Teacher List
+          Class & Teacher List
         </h3>
 
-        <div className="overflow-x-auto border rounded-lg">
+        <div className="overflow-x-auto border rounded-xl">
           <table className="w-full text-sm">
-            <thead className="bg-gray-100">
+            <thead className="bg-gray-100 text-gray-700">
               <tr>
                 <th className="px-4 py-3 text-left">Class</th>
                 <th className="px-4 py-3 text-left">Class Teacher</th>
                 <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-left">Action</th>
               </tr>
             </thead>
 
@@ -300,12 +290,9 @@ const AssignClassTeacher = () => {
                         Remove
                       </button>
                     ) : (
-                      <span className="text-gray-400 text-xs">
-                        -
-                      </span>
+                      <span className="text-gray-400 text-xs">-</span>
                     )}
                   </td>
-
                 </tr>
               ))}
             </tbody>

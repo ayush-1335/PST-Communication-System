@@ -1,73 +1,92 @@
-import React, { useState, useEffect } from 'react';
+import React from "react";
+import { useAdmin } from "../../context/AdminContext";
 
 function Teachers() {
-  const [teachers, setTeachers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { teachers, loading, error, refreshAdminData } = useAdmin();
 
-  useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/users/admin/teachers', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <p className="text-gray-600 text-lg animate-pulse">
+          Loading teachers...
+        </p>
+      </div>
+    );
+  }
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        setTeachers(data.data || []);
-
-        // console.log(data.data)
-
-      } catch (err) {
-        console.error('Error fetching teachers:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTeachers();
-  }, []);
-
-  if (loading) return <p>Loading teachers...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (error) {
+    return (
+      <div className="bg-red-100 text-red-600 p-4 rounded-lg">
+        Error: {error}
+      </div>
+    );
+  }
 
   return (
-    <>
-      <h3>View All Teachers</h3>
+    <div className="bg-white shadow-lg rounded-2xl p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-2xl font-semibold text-gray-800">
+          View All Teachers
+        </h3>
+
+        <button
+          onClick={refreshAdminData}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          Refresh
+        </button>
+      </div>
+
       {teachers.length === 0 ? (
-        <p>No parents found.</p>
+        <div className="text-center text-gray-500 py-10">
+          No teachers found.
+        </div>
       ) : (
-        <table border="1" cellPadding="8">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Subject</th>
-            </tr>
-          </thead>
-          <tbody>
-            {teachers.map((teachers) => (
-              <tr key={teachers.user.username}>
-                <td>{teachers.user.username}</td>
-                <td>{teachers.user?.firstName || 'N/A'}</td>
-                <td>{teachers.user?.lastName || 'N/A'}</td>
-                <td>{teachers.subject || 'N/A'}</td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Username
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  First Name
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Last Name
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Subject
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody className="divide-y divide-gray-200">
+              {teachers.map((teacher) => (
+                <tr
+                  key={teacher.user?.username}
+                  className="hover:bg-gray-50 transition"
+                >
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {teacher.user?.username || "N/A"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {teacher.user?.firstName || "N/A"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {teacher.user?.lastName || "N/A"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {teacher.subject || "N/A"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </>
+    </div>
   );
 }
 

@@ -1,39 +1,16 @@
-import { useEffect, useState } from "react";
+import { useTeacher } from "../../context/TeacherContext"; // ✅ NEW
 
 const MyClasses = () => {
-  const [classes, setClasses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchMyClasses();
-  }, []);
+  // ✅ GET FROM CONTEXT
+  const { classes, loading, error } = useTeacher();
 
-  const fetchMyClasses = async () => {
-  try {
-    const res = await fetch(
-      "http://localhost:3000/users/teacher/my-classes",
-      { credentials: "include" }
-    );
-
-    const data = await res.json();
-    console.log(data);
-
-    if (!res.ok) throw new Error(data.message);
-
-    const sorted = (data.data || []).sort((a, b) => {
-      const stdDiff = Number(a.standard) - Number(b.standard);
-      if (stdDiff !== 0) return stdDiff;
-      return a.section.localeCompare(b.section);
-    });
-
-    setClasses(sorted);
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  // ✅ Sort locally (since we removed fetch logic)
+  const sortedClasses = [...classes].sort((a, b) => {
+    const stdDiff = Number(a.standard) - Number(b.standard);
+    if (stdDiff !== 0) return stdDiff;
+    return a.section.localeCompare(b.section);
+  });
 
   if (loading) {
     return (
@@ -55,13 +32,13 @@ const MyClasses = () => {
         </div>
       )}
 
-      {classes.length === 0 ? (
+      {sortedClasses.length === 0 ? (
         <div className="text-gray-500 text-center py-10">
           No classes assigned yet
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {classes.map((cls) => (
+          {sortedClasses.map((cls) => (
             <div
               key={cls._id}
               className="border rounded-xl p-5 hover:shadow-md transition"

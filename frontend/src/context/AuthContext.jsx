@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
         const fetchProfile = async () => {
             setLoading(true)
             try {
-                const res = await fetch("http://localhost:3000/users/profile", {
+                const res = await fetch("http://localhost:5000/users/profile", {
                     method: "GET",
                     credentials: "include",
                 });
@@ -24,8 +24,6 @@ export const AuthProvider = ({ children }) => {
                     const data = await res.json();
                     setUser(data.data); // safeUser object
                 }
-
-
             } catch {
                 setUser(null);
             } finally {
@@ -41,7 +39,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(true)
 
         try {
-            const response = await fetch("http://localhost:3000/users/login",
+            const response = await fetch("http://localhost:5000/users/login",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -73,11 +71,11 @@ export const AuthProvider = ({ children }) => {
 
     }
 
-        const logout = async () => {
+    const logout = async () => {
             setLoading(true)
 
             try {
-                const response = await fetch("http://localhost:3000/users/logout",
+                const response = await fetch("http://localhost:5000/users/logout",
                     {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -99,7 +97,7 @@ export const AuthProvider = ({ children }) => {
                 setLoading(false);
             }
 
-        };
+    };
 
     return (
         <AuthContext.Provider value={{ user, login, logout, loading }}>

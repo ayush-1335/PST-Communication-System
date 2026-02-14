@@ -11,7 +11,7 @@ const attendanceRecordSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["PRESENT", "ABSENT", "LEAVE"],
-      default: "ABSENT",
+      default: "PRESENT",
     },
   },
   { _id: false }
@@ -50,10 +50,10 @@ const attendanceSchema = new mongoose.Schema(
       type: Date,
     },
 
-    isLocked: {
-      type: Boolean,
-      default: false,
-    },
+    presentCount: { type: Number, default: 0 },
+    absentCount: { type: Number, default: 0 },
+    leaveCount: { type: Number, default: 0 },
+    totalStudents: { type: Number, default: 0 },
 
     academicYear: {
       type: String,
@@ -67,8 +67,10 @@ const attendanceSchema = new mongoose.Schema(
 
 /* 🚨 Prevent duplicate attendance */
 attendanceSchema.index(
-  { class: 1, date: 1 },
+  { class: 1, date: 1, academicYear: 1 },
   { unique: true }
 );
+
+attendanceSchema.index({ class: 1, academicYear: 1 });
 
 export const Attendance = mongoose.model("Attendance", attendanceSchema);
