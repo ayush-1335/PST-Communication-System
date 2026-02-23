@@ -22,12 +22,16 @@ import MyClasses from "./MainPages/Teacher/MyClasses";
 import MyStudents from "./MainPages/Teacher/MyStudents";
 import { TeacherProvider } from "./context/TeacherContext";
 import MarkAttendance from "./MainPages/Teacher/Attendance/MarkAttendance";
+import ClassDashboard from "./MainPages/Teacher/ClassDashboard";
+import CreateAssignment from "./MainPages/Teacher/Assignment/CreateAssignment";
+import ViewAssignments from "./MainPages/Teacher/Assignment/ViewAssignment"
 
 //Student routes
 import StudentDashboard from "./MainPages/Student/StudentDashboard";
 import StudentHome from "./MainPages/Student/StudentHome";
 import MyAttendance from "./MainPages/Student/MyAttendance";
 import { StudentProvider } from "./context/StudentContext";
+import StudentAssignments from "./MainPages/Student/StudentAssignments";
 
 function App() {
 
@@ -83,7 +87,7 @@ function App() {
             <Route path="students" element={<Students />} />
             <Route path="teachers" element={<Teachers />} />
           </Route>
-          
+
           // Teacher routes
           <Route
             path="/teacher"
@@ -97,10 +101,21 @@ function App() {
           >
             <Route index element={<TeacherHome />} />
             <Route path="classes" element={<MyClasses />} />
+
+            <Route path="class/:classId" element={<ClassDashboard />}>
+              {/* <Route index element={<ClassOverview />} /> */}
+              <Route path="create-assignment" element={<CreateAssignment />} />
+              <Route path="assignments" element={<ViewAssignments />} />
+              
+              {/* <Route path="schedule-exam" element={<ScheduleExam />} />
+              <Route path="add-marks" element={<AddMarks />} />
+              <Route path="students" element={<ClassStudents />} /> */}
+            </Route>
+
             <Route path="students" element={<MyStudents />} />
             <Route path="attendance" element={<MarkAttendance />} />
           </Route>
-          
+
           // Student routes
           <Route
             path="/student"
@@ -112,8 +127,9 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={ <StudentHome /> } />
+            <Route index element={<StudentHome />} />
             <Route path="view-attendance" element={<MyAttendance />} />
+            <Route path="view-assignment" element={<StudentAssignments />} />
           </Route>
 
 

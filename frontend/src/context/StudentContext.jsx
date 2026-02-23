@@ -6,6 +6,7 @@ const StudentContext = createContext();
 export const StudentProvider = ({ children }) => {
   const { user } = useAuth();   // ✅ get logged-in user
   const [attendance, setAttendance] = useState([]);
+  const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchAttendance = async () => {
@@ -34,9 +35,37 @@ export const StudentProvider = ({ children }) => {
     }
   };
 
+  const fetchAssignments = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(
+        "http://localhost:5000/users/student/assignments",
+        { credentials: "include" }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        console.error(result.message);
+        setAssignments([]);
+        return;
+      }
+
+      setAssignments(result.data || []);
+
+    } catch (error) {
+      console.error("Fetch error:", error);
+      setAssignments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user?.role === "STUDENT") {
       fetchAttendance();
+      fetchAssignments();
     }
   }, [user]);
 
@@ -46,6 +75,8 @@ export const StudentProvider = ({ children }) => {
         attendance,
         loading,
         fetchAttendance,
+        assignments,
+        fetchAssignments
       }}
     >
       {children}

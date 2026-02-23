@@ -2,7 +2,9 @@ import { Teacher } from "../models/teacher.model.js";
 import { Class } from "../models/class.model.js";
 import { Student } from "../models/student.model.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { Attendance } from "../models/attendanceSchema.model.js";
+import { Attendance } from "../models/attendance.model.js";
+import { Assignment } from "../models/assignment.model.js";
+import { Exam } from "../models/exam.model.js";
 
 const getMyStudents = async (req, res) => {
   try {
@@ -314,4 +316,213 @@ const markAttendance = async (req, res) => {
   }
 }
 
-export { getMyStudents, getMyClasses, markAttendance, getAttendanceByDate }
+const createAssignment = async (req, res) => {
+  const { classId, title, description, dueDate } = req.body
+  const userId = req.user.userId
+
+  if (!classId || !title || !description || !dueDate) {
+    return res.status(400).json(
+      new ApiResponse(400, null, "Missing fields required")
+    )
+  }
+
+  try {
+    const teacherDoc = await Teacher.findOne({ user: userId })
+
+    if (!teacherDoc) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Teacher not found", false)
+      )
+    }
+
+    const classDoc = await Class.findById(classId)
+
+    if (!classDoc) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Class not found", false)
+      )
+    }
+
+    await Assignment.create({
+      class: classId,
+      teacher: teacherDoc._id,
+      subject: teacherDoc.subject,
+      title,
+      description,
+      dueDate
+    })
+
+    return res.status(201).json(
+      new ApiResponse(201,
+        {
+          subject: teacherDoc.subject,
+          title,
+          description,
+          dueDate
+        },
+        "Assignment created successfully"
+      )
+    )
+
+  } catch (error) {
+    console.log("Error during assignment : ", error)
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error", false)
+    )
+  }
+
+
+}
+
+const getTeacherAssignments = async (req, res) => {
+  try {
+    const userId = req.user.userId
+
+    const teacherDoc = await Teacher.findOne({ user: userId })
+    const teacherId = teacherDoc._id
+
+    const assignments = await Assignment.find({
+      teacher: teacherId,
+    })
+      .select("title subject dueDate class")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json(assignments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Server error in getting assignments",
+    });
+  }
+};
+
+const getAssignmentStatus = async (req, res) => {
+  try {
+    const { assignmentId } = req.params;
+
+    const assignment = await Assignment.findById(assignmentId)
+      .select("title dueDate class completedStudents")
+      .lean();
+
+    if (!assignment) {
+      return res.status(404).json({ message: "Assignment not found" });
+    }
+
+    const classData = await Class.findById(assignment.class)
+      .populate({
+        path: "students",
+        populate: {
+          path: "user",
+          select: "firstName lastName username"
+        }
+      })
+      .lean();
+
+    if (!classData) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+
+    // Get all students of that class
+    const allStudents = classData.students
+
+    const completedIds = assignment.completedStudents.map(
+      (student) => student._id.toString()
+    );
+
+    const completed = [];
+    const pending = [];
+    const overdue = [];
+
+    const now = new Date();
+
+    allStudents.forEach((student) => {
+      if (completedIds.includes(student._id.toString())) {
+        completed.push(student);
+      } else {
+        if (assignment.dueDate < now) {
+          overdue.push(student);
+        } else {
+          pending.push(student);
+        }
+      }
+    });
+
+    res.status(200).json({
+      assignmentTitle: assignment.title,
+      totalStudents: allStudents.length,
+      completedCount: completed.length,
+      pendingCount: pending.length,
+      overdueCount: overdue.length,
+      completed,
+      pending,
+      overdue,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error in getting assignmen status" });
+  }
+}
+
+const markStudentComplete = async (req, res) => {
+  const { assignmentId } = req.params;
+  const { studentId } = req.body;
+
+  await Assignment.findByIdAndUpdate(
+    assignmentId,
+    {
+      $addToSet: { completedStudents: studentId },
+    }
+  );
+
+  res.json({ message: "Updated successfully" });
+}
+
+const getTeacherExams = async (req, res) => {
+  try {
+    const userId = req.user.userId
+  
+    const teacherDoc = await Teacher.findOne({ user: userId })
+    .populate("classes", "standard, section")
+    .lean()
+  
+    if(!teacherDoc){
+      return res.status(404).json(
+        new ApiResponse(404, null, "Teacher not found", false)
+      )
+    }
+  
+    const standards = [...new Set(teacherDoc.classes.map(cls => cls.standard))]
+
+    const exams = await Exam.find({
+      subject: teacherDoc.subject,
+      standard: { $in: standards }
+    })
+    .sort({ examDate: 1 })
+    .lean()
+
+    return res.status(200).json(
+      new ApiResponse(200, exams, "All exams fetch for teacher")
+    )
+
+
+  } catch (error) {
+    console.log("Error in fetching exam for teacher: ", error)
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error in fetchingexam for teacher", false)
+    )
+  }
+}
+
+export { 
+  getMyStudents, 
+  getMyClasses, 
+  markAttendance, 
+  getAttendanceByDate, 
+  createAssignment, 
+  getTeacherAssignments, 
+  getAssignmentStatus, 
+  markStudentComplete,
+  getTeacherExams
+}

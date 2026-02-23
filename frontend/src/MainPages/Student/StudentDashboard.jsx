@@ -26,12 +26,12 @@ const StudentDashboard = () => {
               Dashboard
             </h2>
 
-            <button
-              // onClick={refreshTeacherData}
+            {/* <button
+              onClick={refreshTeacherData}
               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition duration-200 active:scale-95"
             >
               🔄 Refresh Data
-            </button>
+            </button> */}
           </div>
 
           {/* Child Routes */}

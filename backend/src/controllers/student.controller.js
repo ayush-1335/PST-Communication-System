@@ -1,6 +1,9 @@
+import { User } from "../models/user.model.js"
 import { Student } from "../models/student.model.js";
-import { Attendance } from "../models/attendanceSchema.model.js";
+import { Assignment } from "../models/assignment.model.js";
+import { Attendance } from "../models/attendance.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { Exam } from "../models/exam.model.js"
 
 const viewAttendance = async (req, res) => {
   try {
@@ -87,4 +90,91 @@ const viewAttendance = async (req, res) => {
   }
 };
 
-export { viewAttendance };
+const getStudentAssignments = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const student = await Student.findOne({ user: userId });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const assignments = await Assignment.find({
+      class: student.class,
+    })
+      .select("title subject dueDate completedStudents")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const now = new Date();
+
+    const formattedAssignments = assignments.map((assignment) => {
+      const isCompleted = assignment.completedStudents
+        .map(id => id.toString())
+        .includes(student._id.toString());
+
+      let status = "pending";
+
+      if (isCompleted) status = "completed";
+      else if (assignment.dueDate < now) status = "overdue";
+
+      return {
+        _id: assignment._id,
+        title: assignment.title,
+        subject: assignment.subject,
+        dueDate: assignment.dueDate,
+        status,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: formattedAssignments,
+    });
+
+  } catch (error) {
+    console.error("Student assignment error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const getStudentExams = async (req, res) => {
+  try {
+
+    const userId = req.user.userId
+
+    const studentDoc = await Student.findOne({ user: userId })
+    .select("standard")
+    .lean()
+
+    if (!studentDoc) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Student not found", false)
+      )
+    }
+
+    const exams = await Exam.find({ standard: studentDoc.standard })
+    .sort({ examDate: 1 }).lean()
+
+    return res.status(200).json(
+      new ApiResponse(200, exams, "All exams fetch for student")
+    )
+
+  } catch (error) {
+    console.log("Error in fetching exam for student: ", error)
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error in fetchingexam for student", false)
+    )
+  }
+
+}
+
+export {
+  viewAttendance,
+  getStudentAssignments,
+  getStudentExams
+};

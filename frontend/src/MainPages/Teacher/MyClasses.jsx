@@ -1,11 +1,10 @@
-import { useTeacher } from "../../context/TeacherContext"; // ✅ NEW
+import { useNavigate } from "react-router-dom";
+import { useTeacher } from "../../context/TeacherContext";
 
 const MyClasses = () => {
-
-  // ✅ GET FROM CONTEXT
   const { classes, loading, error } = useTeacher();
+  const navigate = useNavigate();
 
-  // ✅ Sort locally (since we removed fetch logic)
   const sortedClasses = [...classes].sort((a, b) => {
     const stdDiff = Number(a.standard) - Number(b.standard);
     if (stdDiff !== 0) return stdDiff;
@@ -41,20 +40,15 @@ const MyClasses = () => {
           {sortedClasses.map((cls) => (
             <div
               key={cls._id}
-              className="border rounded-xl p-5 hover:shadow-md transition"
+              onClick={() => navigate(`/teacher/class/${cls._id}`)}
+              className="border rounded-xl p-5 hover:shadow-md transition cursor-pointer"
             >
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold">
-                  Class {cls.standard}-{cls.section}
-                </h3>
-
-                <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
-                  Assigned
-                </span>
-              </div>
+              <h3 className="text-xl font-semibold">
+                Class {cls.standard}-{cls.section}
+              </h3>
 
               <p className="mt-3 text-sm text-gray-600">
-                You teach your subject in this class
+                Click to manage this class
               </p>
             </div>
           ))}

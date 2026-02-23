@@ -21,6 +21,10 @@ const StudentSidebar = () => {
           My Attendance
         </NavLink>
 
+        <NavLink to="/student/view-assignment" className={linkClass}>
+          View Assignment
+        </NavLink>
+
       </nav>
     </aside>
   );

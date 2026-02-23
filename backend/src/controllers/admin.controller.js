@@ -6,6 +6,7 @@ import { Parent } from "../models/parent.model.js"
 import { Class } from "../models/class.model.js"
 import generateStudentCode from "../utils/generateStudentCode.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
+import { Exam } from "../models/exam.model.js"
 
 const bulkRegisterUsers = async (req, res) => {
   const { users } = req.body
@@ -589,4 +590,82 @@ const assignTeacherClasses = async (req, res) => {
 
 }
 
-export { bulkRegisterUsers, getAllStudents, getAllParents, getAllTeachers , getAllClasses, bulkCreateClasses, assignStudentsToClass, assignClassTeacher, removeClassTeacher, assignTeacherClasses }
+const createExam = async (req, res) => {
+  try {
+
+    const{ title, subject, standard, examDate, maxMarks }= req.body
+
+    if(!title || !subject || !standard || ! examDate || !maxMarks){
+      return res.status(400)
+      .json(
+        new ApiResponse(400, null, "All feilds are required!", false)
+      )
+    }
+
+    const examDateObj = new Date(examDate)
+
+    const existingExam = await Exam.findOne({
+      standard,
+      examDate: examDateObj
+    })
+
+    if(existingExam){
+      return res.status(401).json(
+        new ApiResponse(401, null, "An exam is already scheduled for this standard on this date")
+      )
+    }
+
+    const exam = await Exam.create({
+      title,
+      subject,
+      standard,
+      examDate: examDateObj,
+      maxMarks
+    })
+
+    return res.status(200).json(
+      new ApiResponse(200, exam, "Exam created successfully")
+    )
+
+    
+  } catch (error) {
+    console.log("Error while creating Exam: ", error)
+    res.status(500).json(
+      new ApiResponse(500, null, "Server error in Creating exam", false)
+    );
+  }
+}
+
+const getAllExam = async (req, res) => {
+  try {
+    const exams = await Exam.find()
+    .select("-createdBy")
+    .sort({ examDate: 1 })
+    .lean()
+  
+    return res.status(200).json(
+      new ApiResponse(200, exams, "All exams fetch successfully")
+    )
+  
+  } catch (error) {
+    console.log("Error in getAllExam: ", error)
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server Error in getAllExam")
+    )
+  }
+}
+
+export { 
+  bulkRegisterUsers, 
+  getAllStudents, 
+  getAllParents, 
+  getAllTeachers , 
+  getAllClasses, 
+  bulkCreateClasses, 
+  assignStudentsToClass, 
+  assignClassTeacher, 
+  removeClassTeacher, 
+  assignTeacherClasses,
+  createExam,
+  getAllExam
+}

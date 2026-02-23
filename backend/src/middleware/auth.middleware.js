@@ -20,9 +20,9 @@ const authMiddleware = async(req, res, next) => {
         next()
 
     } catch (error) {
-            return res.status(401).json(
-        new ApiResponse(401, null, "Invalid or expired token", false)
-    )
+        return res.status(401).json(
+            new ApiResponse(401, null, "Invalid or expired token", false)
+        )
 
     }
 }
