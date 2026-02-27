@@ -96,6 +96,8 @@ const Profile = () => {
 
       {/* STUDENT */}
       {user.role === "STUDENT" && (
+        <div>
+        <Info label="Standard" value={user.standard} />
         <Section title="Student Information">
           <div className="grid grid-cols-2 gap-4">
             {["houseNo", "street", "city", "state", "pincode"].map((field) => (
@@ -118,6 +120,7 @@ const Profile = () => {
             ))}
           </div>
         </Section>
+          </div>
       )}
 
       {/* PARENT */}

@@ -32,6 +32,10 @@ import StudentHome from "./MainPages/Student/StudentHome";
 import MyAttendance from "./MainPages/Student/MyAttendance";
 import { StudentProvider } from "./context/StudentContext";
 import StudentAssignments from "./MainPages/Student/StudentAssignments";
+import CreateExam from "./MainPages/Admin/CreateExam";
+import ClassTeacherExams from "./MainPages/Teacher/Exam/ClassTeacherExams";
+import ClassSubjectExams from "./MainPages/Teacher/Exam/ClassSubjectExam";
+import StudentExams from "./MainPages/Student/StudentExam";
 
 function App() {
 
@@ -86,6 +90,7 @@ function App() {
             <Route path="parents" element={<Parents />} />
             <Route path="students" element={<Students />} />
             <Route path="teachers" element={<Teachers />} />
+            <Route path="exams" element={<CreateExam />} />
           </Route>
 
           // Teacher routes
@@ -106,14 +111,12 @@ function App() {
               {/* <Route index element={<ClassOverview />} /> */}
               <Route path="create-assignment" element={<CreateAssignment />} />
               <Route path="assignments" element={<ViewAssignments />} />
-              
-              {/* <Route path="schedule-exam" element={<ScheduleExam />} />
-              <Route path="add-marks" element={<AddMarks />} />
-              <Route path="students" element={<ClassStudents />} /> */}
+              <Route path="schedule-exam" element={<ClassSubjectExams /> } />    // Todo
             </Route>
 
             <Route path="students" element={<MyStudents />} />
             <Route path="attendance" element={<MarkAttendance />} />
+            <Route path="exams" element={<ClassTeacherExams />} />
           </Route>
 
           // Student routes
@@ -130,6 +133,7 @@ function App() {
             <Route index element={<StudentHome />} />
             <Route path="view-attendance" element={<MyAttendance />} />
             <Route path="view-assignment" element={<StudentAssignments />} />
+            <Route path="view-exam" element={<StudentExams />} />
           </Route>
 
 

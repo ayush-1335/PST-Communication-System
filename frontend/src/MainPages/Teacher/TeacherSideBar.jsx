@@ -29,6 +29,10 @@ const TeacherSidebar = () => {
           Attendance
         </NavLink>
 
+        <NavLink to="/teacher/exams" className={linkClass}>
+          Exams
+        </NavLink>
+
       </nav>
     </aside>
   );

@@ -4,59 +4,55 @@ import { useAuth } from "../context/AuthContext";
 const StudentContext = createContext();
 
 export const StudentProvider = ({ children }) => {
-  const { user } = useAuth();   // ✅ get logged-in user
+  const { user } = useAuth();
+
   const [attendance, setAttendance] = useState([]);
   const [assignments, setAssignments] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [exams, setExams] = useState([]);
 
-  const fetchAttendance = async () => {
-    if (!user) return;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    setLoading(true);
-
-    try {
-      const res = await fetch(
-        "http://localhost:5000/users/student/view-attendance",
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      const data = await res.json();
-
-      if (data.success) {
-        setAttendance(data.data);
-      }
-    } catch (error) {
-      console.log("Attendance error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAssignments = async () => {
+  const fetchStudentData = async () => {
     try {
       setLoading(true);
 
-      const res = await fetch(
+      // Fetch Attendance
+      const attendanceRes = await fetch(
+        "http://localhost:5000/users/student/view-attendance",
+        { credentials: "include" }
+      );
+      const attendanceData = await attendanceRes.json();
+      if (!attendanceRes.ok) {
+        throw new Error(attendanceData.message);
+      }
+      setAttendance(attendanceData.data);
+
+      // Fetch Assignments
+      const assignmentRes = await fetch(
         "http://localhost:5000/users/student/assignments",
         { credentials: "include" }
       );
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        console.error(result.message);
-        setAssignments([]);
-        return;
+      const assignmentData = await assignmentRes.json();
+      if (!assignmentRes.ok) {
+        throw new Error(assignmentData.message);
       }
+      setAssignments(assignmentData.data || []);
 
-      setAssignments(result.data || []);
+      // Fetch Exams
+      const examRes = await fetch(
+        "http://localhost:5000/users/student/exams",
+        { credentials: "include" }
+      );
+      const examData = await examRes.json();
+      if (!examRes.ok) {
+        throw new Error(examData.message);
+      }
+      setExams(examData.data || []);
 
-    } catch (error) {
-      console.error("Fetch error:", error);
-      setAssignments([]);
+    } catch (err) {
+      console.error("StudentContext error:", err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -64,8 +60,7 @@ export const StudentProvider = ({ children }) => {
 
   useEffect(() => {
     if (user?.role === "STUDENT") {
-      fetchAttendance();
-      fetchAssignments();
+      fetchStudentData();
     }
   }, [user]);
 
@@ -73,10 +68,11 @@ export const StudentProvider = ({ children }) => {
     <StudentContext.Provider
       value={{
         attendance,
-        loading,
-        fetchAttendance,
         assignments,
-        fetchAssignments
+        exams,
+        loading,
+        error,
+        fetchStudentData
       }}
     >
       {children}

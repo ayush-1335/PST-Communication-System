@@ -7,6 +7,7 @@ export const TeacherProvider = ({ children }) => {
   const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
   const [classInfo, setClassInfo] = useState(null);
+  const [classExams, setClassExams] = useState([])
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -17,42 +18,41 @@ export const TeacherProvider = ({ children }) => {
       // Fetch Classes
       const classRes = await fetch(
         "http://localhost:5000/users/teacher/my-classes",
-        {
-          credentials: "include",
-        }
+        { credentials: "include" }
       );
-
       const classData = await classRes.json();
-
     //   console.log("My Classes Teacher Context :", classData)
-
       if (!classRes.ok) {
         throw new Error(classData.message);
       }
-
       setClasses(classData.data);
 
       // Fetch Students (Class Teacher)
       const studentRes = await fetch(
         "http://localhost:5000/users/teacher/my-students",
-        {
-          credentials: "include",
-        }
+        { credentials: "include", }
       );
-
       const studentData = await studentRes.json();
-
       // console.log("My Students Teacher Context :", studentData)
-
       if (!studentRes.ok) {
         throw new Error(studentData.message);
       }
-
       setStudents(studentData.data.students);
       setClassInfo({
         class: studentData.data.class,
         _id: studentData.data.classId
       });
+
+      // Fetch Class Exams
+      const examRes = await fetch(
+        "http://localhost:5000/users/teacher/class/exams",
+        { credentials: "include" }
+      )
+      const examData = await examRes.json()
+      if(!examRes.ok) {
+        throw new Error(examData.message)
+      }
+      setClassExams(examData.data)
 
     } catch (err) {
       setError(err.message);
@@ -66,7 +66,7 @@ export const TeacherProvider = ({ children }) => {
   }, []);
 
   return (
-    <TeacherContext.Provider value={{ classes, students, classInfo, loading, error, refreshTeacherData: fetchTeacherData, }}>
+    <TeacherContext.Provider value={{ classes, students, classInfo, classExams, loading, error, refreshTeacherData: fetchTeacherData, }}>
       {children}
     </TeacherContext.Provider>
   );

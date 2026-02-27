@@ -479,40 +479,133 @@ const markStudentComplete = async (req, res) => {
   res.json({ message: "Updated successfully" });
 }
 
-const getTeacherExams = async (req, res) => {
+// const getTeacherExams = async (req, res) => {
+//   try {
+//     const userId = req.user.userId
+  
+//     const teacherDoc = await Teacher.findOne({ user: userId })
+//     .populate("classes", "standard section")
+//     .lean()
+  
+//     if(!teacherDoc){
+//       return res.status(404).json(
+//         new ApiResponse(404, null, "Teacher not found", false)
+//       )
+//     }
+
+//     if (!teacherDoc.classes || teacherDoc.classes.length === 0) {
+//       return res.status(200).json(
+//         new ApiResponse(200, [], "No classes assigned to teacher")
+//       );
+//     }
+  
+//     const standards = [...new Set(teacherDoc.classes.map(cls => cls.standard))]
+
+//     const exams = await Exam.find({
+//       subject: teacherDoc.subject,
+//       standard: { $in: standards }
+//     })
+//     .select("title subject examDate standard")
+//     .sort({ examDate: 1 })
+//     .lean()
+
+//     return res.status(200).json(
+//       new ApiResponse(200, exams, "All exams fetch for teacher")
+//     )
+
+
+//   } catch (error) {
+//     console.log("Error in fetching exam for teacher: ", error)
+//     return res.status(500).json(
+//       new ApiResponse(500, null, "Server error in fetchingexam for teacher", false)
+//     )
+//   }
+// }
+
+const getClassSubjectExams = async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const userId = req.user.userId;
+
+    const teacherDoc = await Teacher.findOne({ user: userId })
+      .select("subject")
+      .lean();
+
+    if (!teacherDoc) {
+      return res.status(404).json({
+        message: "Teacher not found",
+      });
+    }
+
+    const classDoc = await Class.findById(classId)
+      .select("standard section")
+      .lean();
+
+    if (!classDoc) {
+      return res.status(404).json({
+        message: "Class not found",
+      });
+    }
+
+    const exams = await Exam.find({
+      standard: classDoc.standard,
+      subject: teacherDoc.subject,
+    })
+      .sort({ examDate: 1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      data: exams,
+      class: `${classDoc.standard}-${classDoc.section}`,
+    });
+
+  } catch (error) {
+    console.log("Error fetching class exams:", error);
+    res.status(500).json({
+      message: "Server error while fetching exams",
+    });
+  }
+};
+
+const getClassTeacherExams = async (req, res) => {
   try {
     const userId = req.user.userId
   
     const teacherDoc = await Teacher.findOne({ user: userId })
-    .populate("classes", "standard, section")
-    .lean()
   
     if(!teacherDoc){
       return res.status(404).json(
         new ApiResponse(404, null, "Teacher not found", false)
       )
     }
-  
-    const standards = [...new Set(teacherDoc.classes.map(cls => cls.standard))]
 
-    const exams = await Exam.find({
-      subject: teacherDoc.subject,
-      standard: { $in: standards }
-    })
-    .sort({ examDate: 1 })
+    const classDoc = await Class.findOne({ classTeacher: teacherDoc._id })
+
+    if(!classDoc){
+      return res.status(404).json(
+        new ApiResponse(404, null, "Class not assigned to this teacher", false)
+      )
+    }
+
+    const standard = classDoc.standard
+
+    const exams = await Exam.find({ standard })
+    .sort({ examDate: 1})
     .lean()
 
     return res.status(200).json(
-      new ApiResponse(200, exams, "All exams fetch for teacher")
+      new ApiResponse(200, exams, "All exams for class teacher is fetched")
     )
 
 
   } catch (error) {
-    console.log("Error in fetching exam for teacher: ", error)
+    console.log("Error in fetching exam for class teacher: ", error)
     return res.status(500).json(
-      new ApiResponse(500, null, "Server error in fetchingexam for teacher", false)
+      new ApiResponse(500, null, "Server error in fetchingexam for class teacher", false)
     )
   }
+
 }
 
 export { 
@@ -524,5 +617,7 @@ export {
   getTeacherAssignments, 
   getAssignmentStatus, 
   markStudentComplete,
-  getTeacherExams
+  // getTeacherExams,
+  getClassSubjectExams,
+  getClassTeacherExams
 }

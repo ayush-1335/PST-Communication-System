@@ -7,6 +7,7 @@ export const AdminProvider = ({ children }) => {
   const [parents, setParents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [exams, setExams] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -51,6 +52,15 @@ export const AdminProvider = ({ children }) => {
       if (!classRes.ok) throw new Error(classData.message);
       setClasses(classData.data || []);
 
+      // Fetch exams
+      const examRes = await fetch(
+        "http://localhost:5000/users/admin/get-all-exams",
+        { credentials: "include" }
+      )
+      const examData = await examRes.json()
+      if(!examRes.ok) throw new Error(examData.message)
+      setExams(examData.data || [])
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -69,6 +79,7 @@ export const AdminProvider = ({ children }) => {
         parents,
         teachers,
         classes,
+        exams,
         loading,
         error,
         refreshAdminData: fetchAdminData,
