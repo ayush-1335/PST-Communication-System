@@ -6,6 +6,7 @@ import AdminDashboard from "../MainPages/Admin/AdminDashboard";
 import { AdminProvider } from "../context/AdminContext";
 import { TeacherProvider } from "../context/TeacherContext";
 import { StudentProvider } from "../context/StudentContext";
+import { ParentProvider } from "../context/ParentContext";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -28,7 +29,11 @@ const Dashboard = () => {
       );
 
     case "PARENT":
-      return <ParentDashboard />;
+      return (
+        <ParentProvider>
+          <ParentDashboard />;
+        </ParentProvider>
+      )
 
     case "ADMIN":
       return (

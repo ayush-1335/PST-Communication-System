@@ -13,6 +13,7 @@ import CreateUser from "./MainPages/Admin/CreateUser"
 import Students from "./MainPages/Admin/Students"
 import Parents from "./MainPages/Admin/Parents"
 import Teachers from "./MainPages/Admin/Teachers"
+import AssignRelation from "./MainPages/Admin/AssignRelation"
 import { AdminProvider } from "./context/AdminContext"
 
 //Teacher routes
@@ -37,9 +38,19 @@ import ClassTeacherExams from "./MainPages/Teacher/Exam/ClassTeacherExams";
 import ClassSubjectExams from "./MainPages/Teacher/Exam/ClassSubjectExam";
 import StudentExams from "./MainPages/Student/StudentExam";
 
+//Parent routes
+import ParentDashboard from "./MainPages/Parent/ParentDashboard";
+import ParentHome from "./MainPages/Parent/ParentHome";
+import ConnectWithChildren from "./MainPages/Parent/ConnectWithChildren";
+import { ParentProvider, useParent } from "./context/ParentContext";
+import ParentAttendance from "./MainPages/Parent/ParentAttendance";
+import ParentExams from "./MainPages/Parent/ParentExams";
+
 function App() {
 
   const { user } = useAuth()
+  const { selectedChild } = useParent()
+  // console.log(selectedChild)
 
   return (
     <>
@@ -85,7 +96,8 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="overview" element={<Overview />} />
+            <Route path="overview" index element={<Overview />} />
+            <Route path="assign-relation" element={<AssignRelation />} />
             <Route path="create-user" element={<CreateUser />} />
             <Route path="parents" element={<Parents />} />
             <Route path="students" element={<Students />} />
@@ -134,6 +146,24 @@ function App() {
             <Route path="view-attendance" element={<MyAttendance />} />
             <Route path="view-assignment" element={<StudentAssignments />} />
             <Route path="view-exam" element={<StudentExams />} />
+          </Route>
+
+          // Parent routes
+          <Route
+            path="/parent"
+            element={
+              <ProtectedRoute allowedRoles={["PARENT"]}>
+                <ParentProvider>
+                  <ParentDashboard />
+                </ParentProvider>
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<ParentHome />} />
+            <Route path="connect-child" element={<ConnectWithChildren />} />
+            <Route path="attendance" element={ <ParentAttendance studentId={selectedChild?._id}/> } />
+            <Route path="exams" element={ <ParentExams studentId={selectedChild?._id}/> } />
+
           </Route>
 
 

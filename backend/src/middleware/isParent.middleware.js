@@ -4,6 +4,7 @@ const isParent = (req, res, next) => {
             message: "Parent access only"
         })
     }
+
     next()
 }
 

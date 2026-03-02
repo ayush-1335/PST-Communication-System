@@ -1,303 +1,179 @@
 import { useState } from "react";
 import { useAdmin } from "../../context/AdminContext";
 
+const inputClass = "w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all duration-150 cursor-pointer";
+
+const ConfirmPopup = ({ message, details, onConfirm, onCancel, confirmLabel = "Confirm", confirmStyle = "bg-red-500 hover:bg-red-600" }) => (
+  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl z-10 flex items-center justify-center">
+    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-5 w-80">
+      <p className="text-sm font-semibold text-slate-800 mb-3">{message}</p>
+      {details && (
+        <div className="text-sm text-slate-600 space-y-1 mb-4">
+          {details.map((d, i) => (
+            <p key={i}><span className="text-slate-400">{d.label}:</span> {d.value}</p>
+          ))}
+        </div>
+      )}
+      <div className="flex justify-end gap-2">
+        <button onClick={onCancel} className="px-4 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">Cancel</button>
+        <button onClick={onConfirm} className={`px-4 py-1.5 rounded-lg text-white text-sm font-medium transition-colors ${confirmStyle}`}>{confirmLabel}</button>
+      </div>
+    </div>
+  </div>
+);
+
 const AssignClassTeacher = () => {
   const { classes, teachers, refreshAdminData } = useAdmin();
 
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState("");
-
   const [selectedClassObj, setSelectedClassObj] = useState(null);
   const [selectedTeacherObj, setSelectedTeacherObj] = useState(null);
-
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showAssignConfirm, setShowAssignConfirm] = useState(false);
+  const [confirmRemoveId, setConfirmRemoveId] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  /* ================= ASSIGN LOGIC ================= */
-
   const handleAssignClick = () => {
-    setError("");
-    setSuccess("");
-
-    if (!selectedClass || !selectedTeacher) {
-      setError("Please select both class and teacher");
-      return;
-    }
-
-    if (selectedClassObj?.classTeacher) {
-      setShowConfirm(true);
-      return;
-    }
-
+    setError(""); setSuccess("");
+    if (!selectedClass || !selectedTeacher) { setError("Please select both class and teacher"); return; }
+    if (selectedClassObj?.classTeacher) { setShowAssignConfirm(true); return; }
     assignClassTeacher();
   };
 
   const assignClassTeacher = async () => {
     setLoading(true);
-
     try {
-      const res = await fetch(
-        "http://localhost:5000/users/admin/assign-class-teacher",
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            classId: selectedClass,
-            teacherId: selectedTeacher,
-          }),
-        }
-      );
-
+      const res = await fetch("http://localhost:5000/users/admin/assign-class-teacher", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ classId: selectedClass, teacherId: selectedTeacher }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-
       setSuccess(data.message);
-
-      // Reset form
-      setSelectedClass("");
-      setSelectedTeacher("");
-      setSelectedClassObj(null);
-      setSelectedTeacherObj(null);
-
-      // 🔁 Refresh context data
+      setSelectedClass(""); setSelectedTeacher(""); setSelectedClassObj(null); setSelectedTeacherObj(null);
       refreshAdminData();
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
-      setShowConfirm(false);
+      setLoading(false); setShowAssignConfirm(false);
     }
   };
 
   const removeClassTeacher = async (classId) => {
-    if (!window.confirm("Remove class teacher from this class?")) return;
-
-    setLoading(true);
-    setError("");
-    setSuccess("");
-
+    setLoading(true); setError(""); setSuccess("");
     try {
-      const res = await fetch(
-        "http://localhost:5000/users/admin/remove-class-teacher",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ classId }),
-        }
-      );
-
+      const res = await fetch("http://localhost:5000/users/admin/remove-class-teacher", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ classId }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-
       setSuccess("Class teacher removed successfully");
-
-      // 🔁 Refresh context
       refreshAdminData();
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      setLoading(false); setConfirmRemoveId(null);
     }
   };
 
+  const removeClass = classes.find((c) => c._id === confirmRemoveId);
+
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow">
-      <h2 className="text-2xl font-semibold mb-6">
-        Assign Class Teacher
-      </h2>
+    <div className="relative space-y-6">
 
-      {error && (
-        <div className="mb-4 bg-red-50 text-red-600 px-4 py-2 rounded">
-          {error}
-        </div>
+      {/* Assign confirm popup */}
+      {showAssignConfirm && (
+        <ConfirmPopup
+          message="This class already has a teacher. Replace?"
+          details={[
+            { label: "Class", value: `${selectedClassObj.standard}-${selectedClassObj.section}` },
+            { label: "Current", value: `${selectedClassObj.classTeacher?.user.firstName} ${selectedClassObj.classTeacher?.user.lastName}` },
+            { label: "New", value: `${selectedTeacherObj.user.firstName} ${selectedTeacherObj.user.lastName}` },
+          ]}
+          onConfirm={assignClassTeacher}
+          onCancel={() => setShowAssignConfirm(false)}
+          confirmLabel="Yes, Replace"
+        />
       )}
 
-      {success && (
-        <div className="mb-4 bg-green-50 text-green-600 px-4 py-2 rounded">
-          {success}
-        </div>
+      {/* Remove confirm popup */}
+      {confirmRemoveId && (
+        <ConfirmPopup
+          message="Remove class teacher from this class?"
+          details={[
+            { label: "Class", value: `${removeClass?.standard}-${removeClass?.section}` },
+            { label: "Teacher", value: `${removeClass?.classTeacher?.user.firstName} ${removeClass?.classTeacher?.user.lastName}` },
+          ]}
+          onConfirm={() => removeClassTeacher(confirmRemoveId)}
+          onCancel={() => setConfirmRemoveId(null)}
+          confirmLabel="Yes, Remove"
+        />
       )}
 
-      {/* ================= FORM ================= */}
+      {error && <div className="px-4 py-2.5 rounded-lg bg-red-50 border border-red-200 text-red-500 text-sm">{error}</div>}
+      {success && <div className="px-4 py-2.5 rounded-lg bg-green-50 border border-green-200 text-green-600 text-sm">{success}</div>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-        {/* CLASS SELECT */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Select Class
-          </label>
-          <select
-            value={selectedClass}
-            onChange={(e) => {
-              const id = e.target.value;
-              setSelectedClass(id);
-              setSelectedClassObj(classes.find((c) => c._id === id));
-            }}
-            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-          >
+      {/* Form */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Select Class</label>
+          <select value={selectedClass} onChange={(e) => { const id = e.target.value; setSelectedClass(id); setSelectedClassObj(classes.find((c) => c._id === id)); }} className={inputClass}>
             <option value="">-- Select Class --</option>
-            {classes.map((cls) => (
-              <option key={cls._id} value={cls._id}>
-                {cls.standard}-{cls.section}
-              </option>
-            ))}
+            {classes.map((cls) => <option key={cls._id} value={cls._id}>{cls.standard}-{cls.section}</option>)}
           </select>
         </div>
-
-        {/* TEACHER SELECT */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Select Teacher
-          </label>
-          <select
-            value={selectedTeacher}
-            onChange={(e) => {
-              const id = e.target.value;
-              setSelectedTeacher(id);
-              setSelectedTeacherObj(
-                teachers.find((t) => t._id === id)
-              );
-            }}
-            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-          >
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Select Teacher</label>
+          <select value={selectedTeacher} onChange={(e) => { const id = e.target.value; setSelectedTeacher(id); setSelectedTeacherObj(teachers.find((t) => t._id === id)); }} className={inputClass}>
             <option value="">-- Select Teacher --</option>
-            {teachers.map((t) => (
-              <option key={t._id} value={t._id}>
-                {t.user.firstName} {t.user.lastName} ({t.subject})
-              </option>
-            ))}
+            {teachers.map((t) => <option key={t._id} value={t._id}>{t.user.firstName} {t.user.lastName} ({t.subject})</option>)}
           </select>
         </div>
       </div>
 
-      <button
-        onClick={handleAssignClick}
-        disabled={loading}
-        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60"
-      >
+      <button onClick={handleAssignClick} disabled={loading} className="px-5 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white text-sm font-medium transition-colors duration-150">
         {loading ? "Processing..." : "Assign Class Teacher"}
       </button>
 
-      {/* ================= CONFIRM MODAL ================= */}
-
-      {showConfirm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
-            <h3 className="text-lg font-semibold mb-4">
-              Change Class Teacher?
-            </h3>
-
-            <div className="text-sm space-y-2">
-              <p>
-                <b>Class:</b> {selectedClassObj.standard}-
-                {selectedClassObj.section}
-              </p>
-              <p>
-                <b>Current:</b>{" "}
-                {selectedClassObj.classTeacher?.user.firstName}{" "}
-                {selectedClassObj.classTeacher?.user.lastName}
-              </p>
-              <p>
-                <b>New:</b>{" "}
-                {selectedTeacherObj.user.firstName}{" "}
-                {selectedTeacherObj.user.lastName}
-              </p>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="border px-4 py-2 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={assignClassTeacher}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg"
-              >
-                Yes, Change
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= CLASS TABLE ================= */}
-
-      <div className="mt-12">
-        <h3 className="text-xl font-semibold mb-4">
-          Class & Teacher List
-        </h3>
-
-        <div className="overflow-x-auto border rounded-xl">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="px-4 py-3 text-left">Class</th>
-                <th className="px-4 py-3 text-left">Class Teacher</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Action</th>
+      {/* Table */}
+      <div className="overflow-x-auto rounded-xl border border-slate-200">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-200">
+              <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Class</th>
+              <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Class Teacher</th>
+              <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+              <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {classes.map((cls) => (
+              <tr key={cls._id} className="hover:bg-slate-50 transition-colors duration-100">
+                <td className="px-5 py-3.5 text-sm font-medium text-slate-800">{cls.standard}-{cls.section}</td>
+                <td className="px-5 py-3.5 text-sm text-slate-700">
+                  {cls.classTeacher ? `${cls.classTeacher.user.firstName} ${cls.classTeacher.user.lastName}` : <span className="text-slate-400">Not Assigned</span>}
+                </td>
+                <td className="px-5 py-3.5">
+                  {cls.classTeacher
+                    ? <span className="px-2 py-0.5 rounded-md bg-green-50 border border-green-200 text-green-600 text-xs font-medium">Assigned</span>
+                    : <span className="px-2 py-0.5 rounded-md bg-yellow-50 border border-yellow-200 text-yellow-600 text-xs font-medium">Pending</span>}
+                </td>
+                <td className="px-5 py-3.5">
+                  {cls.classTeacher
+                    ? <button onClick={() => setConfirmRemoveId(cls._id)} disabled={loading} className="px-3 py-1 rounded-lg border border-slate-200 text-slate-500 text-xs font-medium hover:border-red-200 hover:text-red-400 hover:bg-red-50 transition-all duration-150">Remove</button>
+                    : <span className="text-slate-300 text-sm">—</span>}
+                </td>
               </tr>
-            </thead>
-
-            <tbody>
-              {classes.map((cls) => (
-                <tr
-                  key={cls._id}
-                  className="border-t hover:bg-gray-50"
-                >
-                  <td className="px-4 py-3">
-                    {cls.standard}-{cls.section}
-                  </td>
-
-                  <td className="px-4 py-3">
-                    {cls.classTeacher ? (
-                      <>
-                        {cls.classTeacher.user.firstName}{" "}
-                        {cls.classTeacher.user.lastName}
-                      </>
-                    ) : (
-                      <span className="text-gray-400">
-                        Not Assigned
-                      </span>
-                    )}
-                  </td>
-
-                  <td className="px-4 py-3">
-                    {cls.classTeacher ? (
-                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
-                        Assigned
-                      </span>
-                    ) : (
-                      <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">
-                        Pending
-                      </span>
-                    )}
-                  </td>
-
-                  <td className="px-4 py-3">
-                    {cls.classTeacher ? (
-                      <button
-                        onClick={() => removeClassTeacher(cls._id)}
-                        className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs hover:bg-red-200"
-                        disabled={loading}
-                      >
-                        Remove
-                      </button>
-                    ) : (
-                      <span className="text-gray-400 text-xs">-</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

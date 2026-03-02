@@ -6,23 +6,15 @@ function Students() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("all");
 
-  // Filter students based on search
   const filteredStudents = useMemo(() => {
     if (!searchTerm) return students;
-
     return students.filter((student) => {
       const searchLower = searchTerm.toLowerCase();
-
       switch (searchField) {
-        case "username":
-          return student.user?.username?.toLowerCase().includes(searchLower);
-        case "firstName":
-          return student.user?.firstName?.toLowerCase().includes(searchLower);
-        case "lastName":
-          return student.user?.lastName?.toLowerCase().includes(searchLower);
-        case "class":
-          return student.standard?.toLowerCase().includes(searchLower);
-        case "all":
+        case "username": return student.user?.username?.toLowerCase().includes(searchLower);
+        case "firstName": return student.user?.firstName?.toLowerCase().includes(searchLower);
+        case "lastName": return student.user?.lastName?.toLowerCase().includes(searchLower);
+        case "class": return student.standard?.toLowerCase().includes(searchLower);
         default:
           return (
             student.user?.username?.toLowerCase().includes(searchLower) ||
@@ -34,121 +26,100 @@ function Students() {
     });
   }, [students, searchTerm, searchField]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-40">
-        <p className="text-gray-600 text-lg">Loading students...</p>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex justify-center items-center h-40">
+      <p className="text-slate-600 text-sm">Loading students...</p>
+    </div>
+  );
 
-  if (error) {
-    return (
-      <div className="bg-red-100 text-red-600 p-4 rounded">
-        Error: {error}
-      </div>
-    );
-  }
+  if (error) return (
+    <div className="bg-red-50 border border-red-200 text-red-500 text-sm p-4 rounded-xl">
+      Error: {error}
+    </div>
+  );
+
+  const inputClass = "px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-sm placeholder-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all duration-150";
 
   return (
-    <div className="bg-white border border-gray-300 rounded p-6">
+    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-bold text-gray-800">View All Students</h3>
+        <div>
+          <h3 className="text-base font-semibold text-slate-900">All Students</h3>
+          <p className="text-xs text-slate-500 mt-0.5">{students.length} total students</p>
+        </div>
         <button
           onClick={refreshAdminData}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors duration-150"
         >
           Refresh
         </button>
       </div>
 
-      {/* Search Section */}
-      <div className="mb-6 flex gap-4">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Search students..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-        <div>
-          <select
-            value={searchField}
-            onChange={(e) => setSearchField(e.target.value)}
-            className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-blue-500"
-          >
-            <option value="all">All Fields</option>
-            <option value="username">Username</option>
-            <option value="firstName">First Name</option>
-            <option value="lastName">Last Name</option>
-            <option value="class">Class</option>
-          </select>
-        </div>
+      {/* Search */}
+      <div className="flex gap-3 mb-5">
+        <input
+          type="text"
+          placeholder="Search students..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className={inputClass + " flex-1"}
+        />
+        <select
+          value={searchField}
+          onChange={(e) => setSearchField(e.target.value)}
+          className={inputClass + " cursor-pointer"}
+        >
+          <option value="all">All Fields</option>
+          <option value="username">Username</option>
+          <option value="firstName">First Name</option>
+          <option value="lastName">Last Name</option>
+          <option value="class">Class</option>
+        </select>
       </div>
 
-      {/* Results Count */}
+      {/* Results count */}
       {searchTerm && (
-        <div className="mb-4 text-sm text-gray-600">
-          Found {filteredStudents.length} student(s)
-        </div>
+        <p className="text-xs text-slate-500 mb-3">
+          Found <span className="font-semibold text-slate-700">{filteredStudents.length}</span> student(s)
+        </p>
       )}
 
+      {/* Empty state */}
       {filteredStudents.length === 0 ? (
-        <div className="text-center text-gray-500 py-10">
+        <div className="text-center text-slate-500 text-sm py-12">
           {searchTerm ? "No students found matching your search." : "No students found."}
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border border-gray-300">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border-b border-gray-300">
-                  Username
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border-b border-gray-300">
-                  First Name
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border-b border-gray-300">
-                  Last Name
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700 border-b border-gray-300">
-                  Class
-                </th>
+        <div className="overflow-x-auto rounded-xl border border-slate-200">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Username</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">First Name</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Last Name</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Class</th>
               </tr>
             </thead>
-
-            <tbody>
+            <tbody className="divide-y divide-slate-100">
               {[...filteredStudents]
                 .sort((a, b) => {
                   if (!a.class && !b.class) return 0;
                   if (!a.class) return 1;
                   if (!b.class) return -1;
-
-                  if (a.class.standard !== b.class.standard) {
-                    return a.class.standard - b.class.standard;
-                  }
-
+                  if (a.class.standard !== b.class.standard) return a.class.standard - b.class.standard;
                   return a.class.section.localeCompare(b.class.section);
                 })
                 .map((student) => (
-                  <tr
-                    key={student.user?.username}
-                    className="hover:bg-gray-100 border-b border-gray-300"
-                  >
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {student.user?.username || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {student.user?.firstName || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {student.user?.lastName || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {student.standard || "N/A"}
+                  <tr key={student.user?.username} className="hover:bg-slate-50 transition-colors duration-100">
+                    <td className="px-5 py-3.5 text-sm font-medium text-slate-800">{student.user?.username || "—"}</td>
+                    <td className="px-5 py-3.5 text-sm text-slate-700">{student.user?.firstName || "—"}</td>
+                    <td className="px-5 py-3.5 text-sm text-slate-700">{student.user?.lastName || "—"}</td>
+                    <td className="px-5 py-3.5 text-sm text-slate-700">
+                      {student.standard
+                        ? <span className="px-2 py-0.5 rounded-md bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium">{student.standard}</span>
+                        : "—"}
                     </td>
                   </tr>
                 ))}
@@ -156,6 +127,7 @@ function Students() {
           </table>
         </div>
       )}
+
     </div>
   );
 }

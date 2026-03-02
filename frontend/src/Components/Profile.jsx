@@ -1,179 +1,97 @@
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
 
-const Info = ({ label, value, editable, onChange }) => (
-  <div className="flex items-center justify-between border-b border-gray-200 py-3">
-    <span className="text-sm font-medium text-gray-600">{label}</span>
-
-    {editable ? (
-      <input
-        className="text-sm text-gray-900 border rounded-md px-2 py-1 w-48 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    ) : (
-      <span className="text-sm text-gray-900 break-all">
-        {value || "-"}
-      </span>
-    )}
+const Info = ({ label, value }) => (
+  <div className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0">
+    <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</span>
+    <span className="text-sm text-slate-700 break-all">{value || "—"}</span>
   </div>
 );
 
-
 const Section = ({ title, children }) => (
   <div className="mb-8">
-    <h2 className="text-lg font-semibold text-gray-800 mb-4">
-      {title}
-    </h2>
-    <div className="space-y-2">{children}</div>
+    <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">{title}</h2>
+    <div className="bg-white border border-slate-200 rounded-xl px-5 shadow-sm">{children}</div>
   </div>
 );
 
 const Profile = () => {
   const { user, loading } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
 
-  const [formData, setFormData] = useState({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
-    subject: user?.subject || "",
-    address: user?.address || {
-      houseNo: "",
-      street: "",
-      city: "",
-      state: "",
-      pincode: ""
-    },
-    phone: user?.phone || ""
-  });
-
-  if (loading) return <div className="flex justify-center h-64">Loading...</div>;
-  if (!user) return <div className="text-center text-red-500">Not logged in</div>;
-
-  const handleUpdate = () => {
-    console.log("Updated data:", formData);
-
-    try {
-      const res = fetch("http://localhost:5000/users/update-profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify(formData)
-      }
-      )
-
-    } catch (error) {
-      console.log("Error in Updating:", error)
-    }
-
-    setIsEditing(false);
-  };
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-100">
+      <span className="text-slate-400 text-sm">Loading...</span>
+    </div>
+  );
+  if (!user) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-100">
+      <span className="text-red-400 text-sm">Not logged in</span>
+    </div>
+  );
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 bg-white p-8 rounded-xl shadow border">
-      <h1 className="text-2xl font-bold mb-8">My Profile</h1>
+    <div className="min-h-screen bg-slate-100 py-10 px-4">
+      <div className="max-w-2xl mx-auto">
 
-      <Section title="Basic Information">
-        <Info
-          label="First Name"
-          value={formData.firstName}
-          editable={isEditing}
-          onChange={(v) => setFormData({ ...formData, firstName: v })}
-        />
-
-        <Info
-          label="Last Name"
-          value={formData.lastName}
-          editable={isEditing}
-          onChange={(v) => setFormData({ ...formData, lastName: v })}
-        />
-
-        <Info label="Username" value={user.username} />
-        <Info label="Role" value={user.role} />
-      </Section>
-
-      {/* STUDENT */}
-      {user.role === "STUDENT" && (
-        <div>
-        <Info label="Standard" value={user.standard} />
-        <Section title="Student Information">
-          <div className="grid grid-cols-2 gap-4">
-            {["houseNo", "street", "city", "state", "pincode"].map((field) => (
-              <input
-                key={field}
-                disabled={!isEditing}
-                value={formData.address[field]}
-                placeholder={field}
-                className="border px-3 py-2 rounded-md text-sm"
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    address: {
-                      ...formData.address,
-                      [field]: e.target.value
-                    }
-                  })
-                }
-              />
-            ))}
-          </div>
-        </Section>
-          </div>
-      )}
-
-      {/* PARENT */}
-      {user.role === "PARENT" && (
-        <Section title="Parent Information">
-          <div className="grid grid-cols-2 gap-4">
-            {["phone"].map((field) => (
-              <input
-                key={field}
-                disabled={!isEditing}
-                value={formData.phone}
-                placeholder={field}
-                className="border px-3 py-2 rounded-md text-sm"
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })
-                }
-              />
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* TEACHER */}
-      {user.role === "TEACHER" && (
-        <Section title="Teacher Information">
-          <Info
-            label="Subject"
-            value={formData.subject}
-            editable={isEditing}
-            onChange={(v) => setFormData({ ...formData, subject: v })}
+        {/* Header */}
+        <div className="flex items-center gap-5 mb-8">
+          <img
+            src={user?.avatar || "https://i.pravatar.cc/80"}
+            alt="avatar"
+            className="w-16 h-16 rounded-2xl object-cover border border-slate-200 shadow-sm"
           />
-        </Section>
-      )}
+          <div>
+            <h1 className="text-xl font-semibold text-slate-800">
+              {user.firstName} {user.lastName}
+            </h1>
+            <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-100 text-blue-500 text-xs font-medium">
+              {user.role}
+            </span>
+          </div>
+        </div>
 
-      {/* ACTIONS */}
-      <div className="flex justify-end gap-4 mt-8">
-        {!isEditing ? (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="px-6 py-2 border rounded-lg hover:bg-gray-100"
-          >
-            Edit
-          </button>
-        ) : (
-          <button
-            onClick={handleUpdate}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Update
-          </button>
+        {/* Basic Info */}
+        <Section title="Basic Information">
+          <Info label="First Name" value={user.firstName} />
+          <Info label="Last Name" value={user.lastName} />
+          <Info label="Username" value={user.username} />
+          <Info label="Role" value={user.role} />
+        </Section>
+
+        {/* STUDENT */}
+        {user.role === "STUDENT" && (
+          <>
+            <Section title="Student Details">
+              <Info label="Standard" value={user.standard} />
+              <Info label="Student Code" value={user.studentCode} />
+            </Section>
+
+            <Section title="Address">
+              <Info label="House No" value={user.address?.houseNo} />
+              <Info label="Street" value={user.address?.street} />
+              <Info label="City" value={user.address?.city} />
+              <Info label="State" value={user.address?.state} />
+              <Info label="Pincode" value={user.address?.pincode} />
+            </Section>
+          </>
         )}
+
+        {/* PARENT */}
+        {user.role === "PARENT" && (
+          <Section title="Parent Information">
+            <Info label="Phone" value={user.phone} />
+          </Section>
+        )}
+
+        {/* TEACHER */}
+        {user.role === "TEACHER" && (
+          <Section title="Teacher Information">
+            <Info label="Subject" value={user.subject} />
+          </Section>
+        )}
+
       </div>
     </div>
   );
 };
 
-export default Profile
+export default Profile;
