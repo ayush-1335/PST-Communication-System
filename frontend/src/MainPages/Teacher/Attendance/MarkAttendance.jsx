@@ -16,12 +16,8 @@ const MarkAttendance = () => {
 
   const academicYear = "2026-2027";
 
-  // 🔹 Fetch attendance when date changes
   useEffect(() => {
-
-    if (!selectedDate || !classInfo || students.length === 0) {
-      return
-    };
+    if (!selectedDate || !classInfo || students.length === 0) return;
 
     const fetchAttendance = async () => {
       try {
@@ -31,34 +27,18 @@ const MarkAttendance = () => {
 
         const response = await fetch(
           `http://localhost:5000/users/teacher/attendance?date=${selectedDate}&academicYear=${academicYear}`,
-          {
-            credentials: "include",
-          }
+          { credentials: "include" }
         );
 
         const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
 
-        if (!response.ok) {
-          throw new Error(data.message);
-        }
-
-        // ✅ If attendance exists → Edit mode
         if (data.data && data.data.records.length > 0) {
-          setAttendanceRecords(
-            data.data.records.map((rec) => ({
-              student: rec.student._id,
-              status: rec.status,
-            }))
-          );
+          setAttendanceRecords(data.data.records.map((rec) => ({ student: rec.student._id, status: rec.status })));
           setIsEditMode(true);
           setIsEditable(data.data.isEditable);
         } else {
-          const defaultRecords = students.map((student) => ({
-            student: student._id,
-            status: "PRESENT",
-          }));
-
-          setAttendanceRecords(defaultRecords);
+          setAttendanceRecords(students.map((student) => ({ student: student._id, status: "PRESENT" })));
           setIsEditMode(false);
           setIsEditable(true);
         }
@@ -72,65 +52,32 @@ const MarkAttendance = () => {
     fetchAttendance();
   }, [selectedDate, classInfo, students]);
 
-  // 🔹 Change status
   const handleStatusChange = (studentId, newStatus) => {
     if (!isEditable) return;
-
     setAttendanceRecords((prev) =>
-      prev.map((record) =>
-        record.student === studentId
-          ? { ...record, status: newStatus }
-          : record
-      )
+      prev.map((record) => record.student === studentId ? { ...record, status: newStatus } : record)
     );
   };
 
-  // 🔹 Submit
   const handleSubmit = async () => {
-    if (!selectedDate) {
-      setError("Please select date");
-      return;
-    }
-
-    if (!isEditable) {
-      setError("Attendance editing window has expired.");
-      return;
-    }
+    if (!selectedDate) { setError("Please select date"); return; }
+    if (!isEditable) { setError("Attendance editing window has expired."); return; }
 
     try {
       setLoading(true);
       setError("");
       setMessage("");
 
-      const payload = {
-        classId: classInfo._id,
-        date: selectedDate,
-        academicYear,
-        records: attendanceRecords,
-      };
-
-      // console.log("payload :", payload)
-
       const response = await fetch("http://localhost:5000/users/teacher/attendance/mark", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ classId: classInfo._id, date: selectedDate, academicYear, records: attendanceRecords }),
       });
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message);
-      }
-
-      setMessage(
-        isEditMode
-          ? "Attendance updated successfully"
-          : "Attendance marked successfully"
-      );
+      if (!response.ok) throw new Error(data.message);
+      setMessage(isEditMode ? "Attendance updated successfully" : "Attendance marked successfully");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -138,13 +85,15 @@ const MarkAttendance = () => {
     }
   };
 
-  if (teacherLoading) return <p>Loading class information...</p>;
+  if (teacherLoading) return <p className="text-slate-500 text-sm p-6">Loading class information...</p>;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-6">
-        {classInfo?.className} - Attendance
-      </h1>
+    <div className="space-y-5">
+
+      <div>
+        <h1 className="text-base font-semibold text-slate-900">{classInfo?.className} — Attendance</h1>
+        <p className="text-sm text-slate-500 mt-0.5">Mark or update daily attendance for your class</p>
+      </div>
 
       <AttendanceHeader
         selectedDate={selectedDate}
@@ -155,13 +104,8 @@ const MarkAttendance = () => {
         isEditable={isEditable}
       />
 
-      {error && (
-        <p className="mt-4 text-red-600 font-medium">{error}</p>
-      )}
-
-      {message && (
-        <p className="mt-4 text-green-600 font-medium">{message}</p>
-      )}
+      {error && <div className="px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-500 text-sm">{error}</div>}
+      {message && <div className="px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-green-600 text-sm">{message}</div>}
 
       {!loading && attendanceRecords.length > 0 && (
         <AttendanceTable
