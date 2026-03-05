@@ -5,6 +5,10 @@ import { useAuth } from "./context/AuthContext"
 import { ProtectedRoute } from "./Routes/ProtectedRoutes";
 import Dashboard from "./Components/Dashboard";
 import Profile from "./Components/Profile";
+import Home from "./Components/Home";
+import About from "./Components/About";
+import Services from "./Components/Services";
+import Contact from "./Components/Contact";
 
 //Admin routes
 import AdminDashboard from "./MainPages/Admin/AdminDashboard";
@@ -73,7 +77,7 @@ function App() {
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-            }
+            } 
           />
 
           <Route
@@ -169,10 +173,10 @@ function App() {
 
 
           {/* Default route */}
-          <Route path="/" element={<Navigate to="/" />} />
-          <Route path="/about" element={<Navigate to="/about" />} />
-          <Route path="/services" element={<Navigate to="/services" />} />
-          <Route path="/contact" element={<Navigate to="/contact" />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/contact" element={<Contact />} />
 
           {/* 404 */}
           <Route path="*" element={<Navigate to="/" />} />

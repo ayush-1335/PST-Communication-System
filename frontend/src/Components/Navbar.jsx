@@ -23,7 +23,7 @@ const Navbar = () => {
 
         {/* Logo */}
         <a href="/" className="text-white text-[17px] font-semibold tracking-tight shrink-0">
-          My<span className="text-blue-400">App</span>
+          Smart<span className="text-blue-400">EduNet</span>
         </a>
 
         {/* Links */}
