@@ -5,6 +5,9 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Attendance } from "../models/attendance.model.js";
 import { Assignment } from "../models/assignment.model.js";
 import { Exam } from "../models/exam.model.js";
+import { Material } from "../models/material.model.js";
+import cloudinary from "../utils/cloudinary.js";
+import fs from "fs";
 
 const getMyStudents = async (req, res) => {
   try {
@@ -608,6 +611,70 @@ const getClassTeacherExams = async (req, res) => {
 
 }
 
+const uploadMaterial = async (req, res) => {
+
+  try{
+    // console.log("File:", req.file)
+
+    if(!req.file){
+      return res.status(400).json(
+        new ApiResponse(400, null, "File is required", false)
+      )
+    }    
+    
+    const result = await cloudinary.uploader.upload(
+      req.file.path,
+      { resource_type: "auto" }
+    );
+
+    let fileType = "OTHER"
+
+    if (req.file.mimetype.startsWith("image")) {
+      fileType = "IMAGE";
+    } else if (req.file.mimetype === "application/pdf") {
+      fileType = "PDF";
+    } else if (req.file.mimetype.startsWith("video")) {
+      fileType = "VIDEO";
+    } else if (
+      req.file.mimetype ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      fileType = "DOC";
+    }
+
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error("File delete error:", err);
+    });
+    
+    const material = await Material.create({
+      title: req.body.title,
+      description: req.body.description,
+      subject: req.body.subject,
+      standard: req.body.standard,
+      type: req.body.type || "NOTE",
+      fileType: fileType,
+      fileUrl: result.secure_url,
+      uploadedBy: req.user.userId
+    })
+    
+    return res.status(201).json(
+        new ApiResponse(201, material, "Material uploaded successfully")
+      )
+
+  } catch(error) {
+    console.log("Error in uploadMaterial:, ", error)
+
+    if (req.file?.path) {
+      fs.unlink(req.file.path, () => {});
+    }
+
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error in uplaodMaterail", false)
+    )
+  }
+
+}
+
 export { 
   getMyStudents, 
   getMyClasses, 
@@ -619,5 +686,6 @@ export {
   markStudentComplete,
   // getTeacherExams,
   getClassSubjectExams,
-  getClassTeacherExams
+  getClassTeacherExams,
+  uploadMaterial,
 }

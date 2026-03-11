@@ -4,6 +4,7 @@ import { Assignment } from "../models/assignment.model.js";
 import { Attendance } from "../models/attendance.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Exam } from "../models/exam.model.js"
+import { Material } from "../models/material.model.js"
 
 const viewAttendance = async (req, res) => {
   try {
@@ -173,8 +174,39 @@ const getStudentExams = async (req, res) => {
 
 }
 
+const getMaterialsForStudent = async (req, res) => {
+
+  try {
+
+    const userId = req.user.userId
+
+    const student = await Student.findOne({ user: userId })
+
+    if(!student){
+      return res.status(404).json(
+        new ApiResponse(404, null, "Student not found", false)
+      )
+    } 
+
+    const materials = await Material.find({ standard: student.standard}).sort({ createdAt: -1 })
+
+    return res.status(200).json(
+      new ApiResponse(200, materials, "Materials fetch successfully")
+    )
+
+    
+  } catch (error) {
+    console.log("Error in getMaterialForStudent:", error)
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error in getMaterialForStudent", false)
+    )
+  }
+
+}
+
 export {
   viewAttendance,
   getStudentAssignments,
-  getStudentExams
+  getStudentExams,
+  getMaterialsForStudent
 };

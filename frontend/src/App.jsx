@@ -30,6 +30,7 @@ import MarkAttendance from "./MainPages/Teacher/Attendance/MarkAttendance";
 import ClassDashboard from "./MainPages/Teacher/ClassDashboard";
 import CreateAssignment from "./MainPages/Teacher/Assignment/CreateAssignment";
 import ViewAssignments from "./MainPages/Teacher/Assignment/ViewAssignment"
+import UploadMaterial from "./MainPages/Teacher/UploadMaterial";
 
 //Student routes
 import StudentDashboard from "./MainPages/Student/StudentDashboard";
@@ -40,6 +41,7 @@ import StudentAssignments from "./MainPages/Student/StudentAssignments";
 import CreateExam from "./MainPages/Admin/CreateExam";
 import ClassTeacherExams from "./MainPages/Teacher/Exam/ClassTeacherExams";
 import ClassSubjectExams from "./MainPages/Teacher/Exam/ClassSubjectExam";
+import StudentMaterials from "./MainPages/Student/StudentMaterials";
 import StudentExams from "./MainPages/Student/StudentExam";
 
 //Parent routes
@@ -133,6 +135,7 @@ function App() {
             <Route path="students" element={<MyStudents />} />
             <Route path="attendance" element={<MarkAttendance />} />
             <Route path="exams" element={<ClassTeacherExams />} />
+            <Route path="upload-material" element={<UploadMaterial />} />
           </Route>
 
           // Student routes
@@ -149,6 +152,7 @@ function App() {
             <Route index element={<StudentHome />} />
             <Route path="view-attendance" element={<MyAttendance />} />
             <Route path="view-assignment" element={<StudentAssignments />} />
+            <Route path="materials" element={<StudentMaterials/>} />
             <Route path="view-exam" element={<StudentExams />} />
           </Route>
 

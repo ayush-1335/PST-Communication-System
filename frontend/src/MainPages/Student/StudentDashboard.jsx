@@ -1,8 +1,11 @@
 import { Outlet } from "react-router-dom";
 import StudentSideBar from "./StudentSideBar";
 import StudentTopbar from "./StudentTopbar";
+import { useStudent } from "../../context/StudentContext";
 
 const StudentDashboard = () => {
+
+  const { fetchStudentData } = useStudent()
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
@@ -26,12 +29,12 @@ const StudentDashboard = () => {
               Dashboard
             </h2>
 
-            {/* <button
-              onClick={refreshTeacherData}
+            <button
+              onClick={fetchStudentData}
               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition duration-200 active:scale-95"
             >
               🔄 Refresh Data
-            </button> */}
+            </button>
           </div>
 
           {/* Child Routes */}

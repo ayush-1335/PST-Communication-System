@@ -33,6 +33,10 @@ const TeacherSidebar = () => {
           Exams
         </NavLink>
 
+        <NavLink to="/teacher/upload-material" className={linkClass}>
+          Upload Material
+        </NavLink>
+
       </nav>
     </aside>
   );

@@ -9,6 +9,7 @@ export const StudentProvider = ({ children }) => {
   const [attendance, setAttendance] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [exams, setExams] = useState([]);
+  const [materials, setMaterials] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,6 +51,14 @@ export const StudentProvider = ({ children }) => {
       }
       setExams(examData.data || []);
 
+      // Materials
+      const materialRes = await fetch(
+        "http://localhost:5000/users/student/materials",
+        { credentials: "include" }
+      );
+      const materialData = await materialRes.json();
+      setMaterials(materialData.data || []);
+
     } catch (err) {
       console.error("StudentContext error:", err);
       setError(err.message);
@@ -59,10 +68,8 @@ export const StudentProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (user?.role === "STUDENT") {
       fetchStudentData();
-    }
-  }, [user]);
+  }, []);
 
   return (
     <StudentContext.Provider
@@ -70,6 +77,7 @@ export const StudentProvider = ({ children }) => {
         attendance,
         assignments,
         exams,
+        materials,
         loading,
         error,
         fetchStudentData
