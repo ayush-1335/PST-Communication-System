@@ -1,9 +1,10 @@
 import {Router} from "express"
-import {bulkCreateClasses, bulkRegisterUsers, getAllStudents, getAllParents, getAllTeachers , getAllClasses, assignStudentsToClass, assignClassTeacher, removeClassTeacher, assignTeacherClasses, createExam, getAllExam } from "../controllers/admin.controller.js"
+import {bulkCreateClasses, resetUserPassword, bulkRegisterUsers, getAllStudents, getAllParents, getAllTeachers , getAllClasses, assignStudentsToClass, assignClassTeacher, removeClassTeacher, assignTeacherClasses, createExam, getAllExam } from "../controllers/admin.controller.js"
 
 const router = Router()
 
 router.post("/bulk-register", bulkRegisterUsers)
+router.post("/reset-password/:userId", resetUserPassword)
 
 router.get("/students", getAllStudents);
 router.get("/parents", getAllParents)

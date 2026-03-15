@@ -7,6 +7,8 @@ import { Class } from "../models/class.model.js"
 import generateStudentCode from "../utils/generateStudentCode.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { Exam } from "../models/exam.model.js"
+import { generateTempPassword } from "../utils/generateTempPassword.js"
+import { generateUsername } from "../utils/generateUsername.js"
 
 const bulkRegisterUsers = async (req, res) => {
   const { users } = req.body
@@ -27,8 +29,6 @@ const bulkRegisterUsers = async (req, res) => {
       const {
         firstName,
         lastName,
-        username,
-        password,
         role,
         standard,
         address,
@@ -37,23 +37,29 @@ const bulkRegisterUsers = async (req, res) => {
       } = userData
 
 
-      if (!firstName || !lastName || !username || !password || !role) {
+      if (!firstName || !lastName || !role) {
         throw new Error("Missing required fields")
       }
 
-      const exists = await User.findOne({ username })
+      const allowedRoles = ["STUDENT", "TEACHER", "PARENT"]
 
-      // console.log("Exists ", exists)
-
-      if (exists) {
-        throw new Error("User already exists")
+      if (!allowedRoles.includes(role)) {
+        throw new Error("Invalid role")
       }
+
+      let username = await generateUsername(role)
+
+      while (await User.findOne({ username })) {
+        username = await generateUsername(role)
+      }
+
+      const tempPassword = generateTempPassword()
 
       const user = await User.create({
         firstName,
         lastName,
         username,
-        password,
+        password: tempPassword,
         role
       })
 
@@ -90,11 +96,17 @@ const bulkRegisterUsers = async (req, res) => {
         })
       }
 
-      createdUsers.push(user.username)
+      createdUsers.push({
+        username,
+        tempPassword,
+        firstName,
+        lastName,
+        role
+      })
 
     } catch (error) {
       failedUsers.push({
-        username: userData.username,
+        name: `${userData.firstName} ${userData.lastName}`,
         reason: error.message
       })
     }
@@ -108,99 +120,128 @@ const bulkRegisterUsers = async (req, res) => {
   )
 }
 
+const resetUserPassword = async (req, res) => {
+
+  const { userId } = req.params
+
+  const user = await User.findById(userId)
+
+  if (!user) {
+    return res.status(404).json(
+      new ApiResponse(404, null, "User not found", false)
+    )
+  }
+
+  const tempPassword = generateTempPassword()
+
+  user.password = tempPassword
+  await user.save()
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        username: user.username,
+        tempPassword
+      },
+      "Password reset successfully"
+    )
+  )
+}
+
 const getAllStudents = async (req, res) => {
 
-    // console.log("IN get all students")
+  // console.log("IN get all students")
 
-    try {
-        const students = await Student.find({})
-            .select("standard section user _id")
-            .populate({
-                path: "user",
-                select: "firstName lastName username -_id",
-            })
-            .populate({
-    path: "class",
-    select: "standard section"
-  })
+  try {
+    const students = await Student.find({})
+      .select("standard section user _id")
+      .populate({
+        path: "user",
+        select: "firstName lastName username _id",
+      })
+      .populate({
+        path: "class",
+        select: "standard section"
+      })
 
-        if (!students.length) {
-            return res.status(404).json(
-                new ApiResponse(404, [], "No students found")
-            )
-        }
-
-        // console.log(students)
-
-        return res.status(200).json(
-            new ApiResponse(200, students, "Students fetched successfully")
-        )
-    } catch (error) {
-        console.error("Error fetching students:", error)
-        return res.status(500).json(
-            new ApiResponse(500, null, "Internal server error", false)
-        )
+    if (!students.length) {
+      return res.status(404).json(
+        new ApiResponse(404, [], "No students found")
+      )
     }
+
+    // console.log(students)
+
+    return res.status(200).json(
+      new ApiResponse(200, students, "Students fetched successfully")
+    )
+  } catch (error) {
+    console.error("Error fetching students:", error)
+    return res.status(500).json(
+      new ApiResponse(500, null, "Internal server error", false)
+    )
+  }
 }
 
 const getAllParents = async (req, res) => {
 
-    // console.log("IN get all parents")
+  // console.log("IN get all parents")
 
-    try {
-        const parents = await Parent.find()
-            .populate({
-                path: "user",
-                select: "-password"
-            })
+  try {
+    const parents = await Parent.find()
+      .populate({
+        path: "user",
+        select: "-password"
+      })
 
-        if (!parents.length) {
-            return res.status(404).json(
-                new ApiResponse(404, [], "No parents found")
-            )
-        }
-
-        // console.log(parents)
-
-        return res.status(200).json(
-            new ApiResponse(200, parents, "Parents fetched successfully")
-        )
-    } catch (error) {
-        console.error("Error fetching parents:", error)
-        return res.status(500).json(
-            new ApiResponse(500, null, "Internal server error", false)
-        )
+    if (!parents.length) {
+      return res.status(404).json(
+        new ApiResponse(404, [], "No parents found")
+      )
     }
+
+    // console.log(parents)
+
+    return res.status(200).json(
+      new ApiResponse(200, parents, "Parents fetched successfully")
+    )
+  } catch (error) {
+    console.error("Error fetching parents:", error)
+    return res.status(500).json(
+      new ApiResponse(500, null, "Internal server error", false)
+    )
+  }
 }
 
 const getAllTeachers = async (req, res) => {
 
-    // console.log("IN get all teachers")
+  // console.log("IN get all teachers")
 
-    try {
-        const teachers = await Teacher.find()
-            .populate({
-                path: "user",
-                select: "-password"
-            })
+  try {
+    const teachers = await Teacher.find()
+      .populate({
+        path: "user",
+        select: "-password"
+      })
 
-        if (!teachers.length) {
-            return res.status(404).json(
-                new ApiResponse(404, [], "No teachers found")
-            )
-        }
-
-        // console.log(teachers)
-
-        return res.status(200).json(
-            new ApiResponse(200, teachers, "Teachers fetched successfully")
-        )
-    } catch (error) {
-        console.error("Error fetching teachers:", error)
-        return res.status(500).json(
-            new ApiResponse(500, null, "Internal server error", false)
-        )
+    if (!teachers.length) {
+      return res.status(404).json(
+        new ApiResponse(404, [], "No teachers found")
+      )
     }
+
+    // console.log(teachers)
+
+    return res.status(200).json(
+      new ApiResponse(200, teachers, "Teachers fetched successfully")
+    )
+  } catch (error) {
+    console.error("Error fetching teachers:", error)
+    return res.status(500).json(
+      new ApiResponse(500, null, "Internal server error", false)
+    )
+  }
 }
 
 const bulkCreateClasses = async (req, res) => {
@@ -593,13 +634,13 @@ const assignTeacherClasses = async (req, res) => {
 const createExam = async (req, res) => {
   try {
 
-    const{ title, subject, standard, examDate, maxMarks }= req.body
+    const { title, subject, standard, examDate, maxMarks } = req.body
 
-    if(!title || !subject || !standard || ! examDate || !maxMarks){
+    if (!title || !subject || !standard || !examDate || !maxMarks) {
       return res.status(400)
-      .json(
-        new ApiResponse(400, null, "All feilds are required!", false)
-      )
+        .json(
+          new ApiResponse(400, null, "All feilds are required!", false)
+        )
     }
 
     const examDateObj = new Date(examDate)
@@ -609,7 +650,7 @@ const createExam = async (req, res) => {
       examDate: examDateObj
     })
 
-    if(existingExam){
+    if (existingExam) {
       return res.status(401).json(
         new ApiResponse(401, null, "An exam is already scheduled for this standard on this date")
       )
@@ -627,7 +668,7 @@ const createExam = async (req, res) => {
       new ApiResponse(200, exam, "Exam created successfully")
     )
 
-    
+
   } catch (error) {
     console.log("Error while creating Exam: ", error)
     res.status(500).json(
@@ -639,14 +680,14 @@ const createExam = async (req, res) => {
 const getAllExam = async (req, res) => {
   try {
     const exams = await Exam.find()
-    .select("-createdBy")
-    .sort({ examDate: 1 })
-    .lean()
-  
+      .select("-createdBy")
+      .sort({ examDate: 1 })
+      .lean()
+
     return res.status(200).json(
       new ApiResponse(200, exams, "All exams fetch successfully")
     )
-  
+
   } catch (error) {
     console.log("Error in getAllExam: ", error)
     return res.status(500).json(
@@ -655,16 +696,17 @@ const getAllExam = async (req, res) => {
   }
 }
 
-export { 
-  bulkRegisterUsers, 
-  getAllStudents, 
-  getAllParents, 
-  getAllTeachers , 
-  getAllClasses, 
-  bulkCreateClasses, 
-  assignStudentsToClass, 
-  assignClassTeacher, 
-  removeClassTeacher, 
+export {
+  bulkRegisterUsers,
+  resetUserPassword,
+  getAllStudents,
+  getAllParents,
+  getAllTeachers,
+  getAllClasses,
+  bulkCreateClasses,
+  assignStudentsToClass,
+  assignClassTeacher,
+  removeClassTeacher,
   assignTeacherClasses,
   createExam,
   getAllExam

@@ -5,6 +5,9 @@ function Teachers() {
   const { teachers, loading, error, refreshAdminData } = useAdmin();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("all");
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [resetResult, setResetResult] = useState(null);
 
   const filteredTeachers = useMemo(() => {
     if (!searchTerm) return teachers;
@@ -25,6 +28,33 @@ function Teachers() {
       }
     });
   }, [teachers, searchTerm, searchField]);
+
+  const resetPassword = async () => {
+    if (!selectedTeacher) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/users/admin/reset-password/${selectedTeacher.user._id}`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error(data.message);
+        return;
+      }
+
+      setResetResult(data.data);
+      setShowConfirmModal(false);
+
+    } catch (err) {
+      console.error("Reset failed");
+    }
+  };
 
   if (loading) return (
     <div className="flex justify-center items-center h-40">
@@ -100,6 +130,7 @@ function Teachers() {
                 <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">First Name</th>
                 <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Last Name</th>
                 <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Subject</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -113,10 +144,93 @@ function Teachers() {
                       ? <span className="px-2 py-0.5 rounded-md bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium">{teacher.subject}</span>
                       : "—"}
                   </td>
+                  <td className="px-5 py-3.5 text-sm">
+                      <button
+                        onClick={() => {
+                          setSelectedTeacher(teacher);
+                          setShowConfirmModal(true);
+                        }}
+                        className="text-red-500 hover:text-red-600 font-medium"
+                      >
+                        Reset Password
+                      </button>
+                    </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {showConfirmModal && selectedTeacher && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+
+          <div className="bg-white rounded-xl shadow-lg w-[360px] p-6">
+
+            <h3 className="text-lg font-semibold text-slate-800 mb-3">
+              Confirm Password Reset
+            </h3>
+
+            <p className="text-sm text-slate-600 mb-5">
+              Are you sure you want to reset password for
+              <span className="font-medium text-slate-800"> {selectedTeacher.user?.username}</span> ?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={resetPassword}
+                className="px-4 py-2 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600"
+              >
+                Reset Password
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+      {resetResult && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+
+          <div className="bg-white rounded-xl shadow-lg w-[380px] p-6">
+
+            <h3 className="text-lg font-semibold text-slate-800 mb-4">
+              Password Reset Successful
+            </h3>
+
+            <div className="text-sm text-slate-600 space-y-2 mb-5">
+              <p>
+                <span className="font-medium text-slate-800">Username:</span>{" "}
+                {resetResult.username}
+              </p>
+
+              <p>
+                <span className="font-medium text-slate-800">Temp Password:</span>{" "}
+                <span className="font-mono bg-slate-100 px-2 py-1 rounded">
+                  {resetResult.tempPassword}
+                </span>
+              </p>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => setResetResult(null)}
+                className="px-4 py-2 rounded-lg bg-blue-500 text-white text-sm hover:bg-blue-600"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+
         </div>
       )}
 

@@ -84,6 +84,18 @@ const Login = () => {
               />
             </div>
 
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() =>
+                  alert("If you forgot your password, please contact the administrator to reset it.")
+                }
+                className="text-xs text-blue-500 hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
+
             <button
               type="submit"
               disabled={loading}

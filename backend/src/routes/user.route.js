@@ -1,14 +1,16 @@
 import {Router} from "express"
-import { loginUser, registerUser, logoutUser, getUserProfile } from "../controllers/user.controller.js"
+import { loginUser, registerUser, logoutUser, getUserProfile, changePassword } from "../controllers/user.controller.js"
 import authMiddleware from "../middleware/auth.middleware.js"
 import isAdmin from "../middleware/isAdmin.middleware.js"
 import isStudent from "../middleware/isStudent.middleware.js"
 import isParent from "../middleware/isParent.middleware.js"
 import isTeacher from "../middleware/isTeacher.middleware.js"
+import isBusHandler from "../middleware/isBusHandler.middleware.js"
 import adminRouter from "./admin.route.js"
 import studentRouter from "./student.route.js"
 import parentRouter from "./parent.route.js"
 import teacherRouter from "./teacher.route.js"
+import busHandlerRouter from "./busHandler.route.js"
 
 const router = Router()
 
@@ -16,10 +18,12 @@ router.route("/register").post(registerUser)
 router.route("/login").post(loginUser)
 router.route("/logout").post(authMiddleware, logoutUser)
 router.route("/profile").get(authMiddleware, getUserProfile)
+router.route("/change-password").post(authMiddleware, changePassword)
 
 router.use("/admin", authMiddleware, isAdmin, adminRouter)
 router.use("/student", authMiddleware, isStudent, studentRouter)
 router.use("/parent", authMiddleware, isParent, parentRouter)
 router.use("/teacher", authMiddleware, isTeacher, teacherRouter)
+router.use("/bus-handler", authMiddleware, isBusHandler, busHandlerRouter)
 
 export default router

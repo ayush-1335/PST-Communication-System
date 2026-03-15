@@ -1,4 +1,5 @@
 import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
 
 const Info = ({ label, value }) => (
   <div className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0">
@@ -16,6 +17,12 @@ const Section = ({ title, children }) => (
 
 const Profile = () => {
   const { user, loading } = useAuth();
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: "",
+    newPassword: "",
+  });
+
+  const [message, setMessage] = useState("");
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100">
@@ -27,6 +34,35 @@ const Profile = () => {
       <span className="text-red-400 text-sm">Not logged in</span>
     </div>
   );
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch("http://localhost:5000/users/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(passwordForm),
+      });
+
+      const data = await res.json();
+      console.log("Data:", data.data)
+
+      if (!res.ok) {
+        setMessage(data.message || "Failed to change password");
+        return;
+      }
+
+      setMessage("Password changed successfully");
+      setPasswordForm({ oldPassword: "", newPassword: "" });
+
+    } catch (error) {
+      setMessage("Something went wrong");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-100 py-10 px-4">
@@ -90,6 +126,54 @@ const Profile = () => {
         )}
 
       </div>
+
+      <Section title="Security">
+
+        {message && (
+          <div className="text-sm text-blue-500 py-2">{message}</div>
+        )}
+
+        <form
+          onSubmit={handlePasswordChange}
+          className="flex flex-col gap-3 py-4"
+        >
+
+          <input
+            type="password"
+            placeholder="Current Password"
+            value={passwordForm.oldPassword}
+            onChange={(e) =>
+              setPasswordForm({
+                ...passwordForm,
+                oldPassword: e.target.value,
+              })
+            }
+            className="px-3 py-2 rounded-lg border border-slate-200 text-sm"
+          />
+
+          <input
+            type="password"
+            placeholder="New Password"
+            value={passwordForm.newPassword}
+            onChange={(e) =>
+              setPasswordForm({
+                ...passwordForm,
+                newPassword: e.target.value,
+              })
+            }
+            className="px-3 py-2 rounded-lg border border-slate-200 text-sm"
+          />
+
+          <button
+            type="submit"
+            className="px-4 py-2 rounded-lg bg-blue-500 text-white text-sm"
+          >
+            Change Password
+          </button>
+
+        </form>
+
+      </Section>
     </div>
   );
 };

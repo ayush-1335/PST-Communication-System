@@ -231,6 +231,39 @@ const getUserProfile = async (req, res) => {
     );
 }
 
+const changePassword = async (req, res) => {
+    const userId = req.user.userId
+    const { oldPassword, newPassword } = req.body
+
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json(
+            new ApiResponse(400, null, "Old and New password required", false)
+        )
+    }
+
+    const user = await User.findById(userId)
+
+    if (!user) {
+        return res.status(404).json(
+            new ApiResponse(404, null, "User not found", false)
+        )
+    }
+
+    const isMatch = await user.isPasswordCorrect(oldPassword)
+
+    if (!isMatch) {
+        return res.status(400).json(
+            new ApiResponse(400, null, "Old password is incorrect", false)
+        )
+    }
+
+    user.password = newPassword
+    await user.save()
+
+    return res.status(200).json(
+        new ApiResponse(200, null, "Password changed successfully")
+    )
+}
 
 
-export { registerUser, loginUser, logoutUser, getUserProfile }
+export { registerUser, loginUser, logoutUser, getUserProfile, changePassword }
