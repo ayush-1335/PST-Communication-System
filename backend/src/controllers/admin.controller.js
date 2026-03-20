@@ -9,6 +9,11 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import { Exam } from "../models/exam.model.js"
 import { generateTempPassword } from "../utils/generateTempPassword.js"
 import { generateUsername } from "../utils/generateUsername.js"
+import { TransportHandler } from "../models/transportHandler.model.js"
+import { Driver } from "../models/Transport_Models/driver.model.js"
+import { Route } from "../models/Transport_Models/route.model.js"
+import { Bus } from "../models/Transport_Models/bus.model.js";
+
 
 const bulkRegisterUsers = async (req, res) => {
   const { users } = req.body
@@ -41,7 +46,7 @@ const bulkRegisterUsers = async (req, res) => {
         throw new Error("Missing required fields")
       }
 
-      const allowedRoles = ["STUDENT", "TEACHER", "PARENT"]
+      const allowedRoles = ["STUDENT", "TEACHER", "PARENT", "TRANSPORT_HANDLER"]
 
       if (!allowedRoles.includes(role)) {
         throw new Error("Invalid role")
@@ -93,6 +98,17 @@ const bulkRegisterUsers = async (req, res) => {
           user: user._id,
           phone,
           students: []
+        })
+      }
+
+      if (role === "TRANSPORT_HANDLER") {
+        if (!phone) {
+          throw new Error("Phone number required for parent")
+        }
+
+        await TransportHandler.create({
+          user: user._id,
+          phone,
         })
       }
 
@@ -215,8 +231,6 @@ const getAllParents = async (req, res) => {
 }
 
 const getAllTeachers = async (req, res) => {
-
-  // console.log("IN get all teachers")
 
   try {
     const teachers = await Teacher.find()
@@ -696,6 +710,612 @@ const getAllExam = async (req, res) => {
   }
 }
 
+// Transport System
+
+const getAllBusHandler = async (req, res) => {
+  try {
+    const busHandlers = await TransportHandler.find()
+      .populate({
+        path: "user",
+        select: "-password"
+      })
+
+    if (!busHandlers.length) {
+      return res.status(404).json(
+        new ApiResponse(404, [], "No busHandlers found")
+      )
+    }
+
+    // console.log(teachers)
+
+    return res.status(200).json(
+      new ApiResponse(200, busHandlers, "busHandlers fetched successfully")
+    )
+  } catch (error) {
+    console.error("Error fetching busHandlers:", error)
+    return res.status(500).json(
+      new ApiResponse(500, null, "Internal server error", false)
+    )
+  }
+}
+
+const createDriver = async (req, res) => {
+  try {
+
+    const { firstName, lastName, phone, licenseNumber } = req.body
+
+    if (!firstName || !lastName || !phone || !licenseNumber) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "All feilds required", false)
+      )
+    }
+
+    const driver = await Driver.create({
+      firstName,
+      lastName,
+      phone,
+      licenseNumber
+    })
+
+    res.status(201).json(
+      new ApiResponse(201, driver, "Driver created successfully")
+    )
+
+  } catch (error) {
+    console.log("Server error in createDriver")
+    res.status(500).json(
+      new ApiResponse(500, null, "Server error in creating driver", false)
+    )
+  }
+}
+
+const getDrivers = async (req, res) => {
+  try {
+
+    const drivers = await Driver.find()
+
+    return res.status(200).json(
+      new ApiResponse(200, drivers, "Drivers fetched successfully", true)
+    )
+
+  } catch (error) {
+    console.log("Server error in getDrivers")
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error fetching drivers", false)
+    )
+
+  }
+}
+
+const createRoute = async (req, res) => {
+
+  try {
+
+    const { routeName, stops } = req.body
+
+    if (!routeName || !stops || stops.length < 2) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Route name and at least 2 stops are required", false)
+      )
+    }
+
+    const existingRoute = await Route.findOne({ routeName })
+
+    if (existingRoute) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Route already exists", false)
+      )
+    }
+
+    const newRoute = await Route.create({
+      routeName,
+      stops
+    })
+
+    return res.status(201).json(
+      new ApiResponse(201, newRoute, "Route created successfully")
+    )
+
+  } catch (error) {
+
+    console.log("Sevrer error in createRoute")
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error in creating routing", false)
+    )
+
+  }
+
+}
+
+const getAllRoutes = async (req, res) => {
+
+  try {
+
+    const routes = await Route.find().sort({ createdAt: -1 })
+
+    return res.status(200).json(
+      new ApiResponse(200, routes, "All routed fetch successfully")
+    )
+
+  } catch (error) {
+    console.log("Server error in getAllRoutes")
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error in finding all routes", false)
+    )
+
+  }
+
+}
+
+const getRouteById = async (req, res) => {
+
+  try {
+
+    const { routeId } = req.params
+
+    const route = await Route.findById(routeId)
+
+    if (!route) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Route not found", false)
+      )
+    }
+
+    return res.status(200).json(
+      new ApiResponse(200, route, "Route By Id fetch fetch successfully")
+    )
+
+  } catch (error) {
+    console.log("Server error in getRouteById")
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error in finding selected route", false)
+    )
+
+  }
+
+}
+
+const updateRoute = async (req, res) => {
+
+  try {
+
+    const { routeId } = req.params
+    const { routeName, stops } = req.body
+
+    const updatedRoute = await Route.findByIdAndUpdate(
+      routeId,
+      { routeName, stops },
+      { new: true, runValidators: true }
+    )
+
+    if (!updatedRoute) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Route not found", false)
+      )
+    }
+
+    return res.status(200).json(
+      new ApiResponse(200, updatedRoute, "Route Updated successfully")
+    )
+
+  } catch (error) {
+    console.log("Server route in updateRoute")
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error in updating route", false)
+    )
+
+  }
+
+}
+
+const deleteRoute = async (req, res) => {
+
+  try {
+
+    const { id } = req.params
+
+    const deletedRoute = await Route.findByIdAndDelete(id)
+
+    if (!deletedRoute) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Route not found", false)
+      )
+    }
+
+    return res.status(200).json(
+      new ApiResponse(200, null, "Route deleted successfully")
+    )
+
+  } catch (error) {
+    console.log("Server erro in deleteRoute")
+    return res.status(500).json(
+      new ApiResponse(500, null, "Error deleting route", false)
+    )
+
+  }
+
+}
+
+const createBus = async (req, res) => {
+
+  try {
+
+    const { busNumber, busRegistrationNumber, capacity, driver, handler, route } = req.body;
+
+    if (!busNumber || !busRegistrationNumber || !capacity) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Bus number, registration number and capacity are required", false)
+      );
+    }
+
+    const existingBusNumber = await Bus.findOne({ busNumber });
+    if (existingBusNumber) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Bus number already exists", false)
+      );
+    }
+
+    const existingReg = await Bus.findOne({ busRegistrationNumber });
+    if (existingReg) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Bus registration number already exists", false)
+      );
+    }
+
+    let driverDoc = null;
+    if (driver) {
+      if (!mongoose.Types.ObjectId.isValid(driver)) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Invalid driver ID", false)
+        );
+      }
+
+      driverDoc = await Driver.findById(driver);
+      if (!driverDoc) {
+        return res.status(404).json(
+          new ApiResponse(404, null, "Driver not found", false)
+        );
+      }
+
+      // 🚀 Prevent driver assigned to multiple buses
+      const driverAlreadyAssigned = await Bus.findOne({ driver });
+      if (driverAlreadyAssigned) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Driver already assigned to another bus", false)
+        );
+      }
+    }
+
+    // 5️⃣ Validate Handler (User)
+    let handlerDoc = null;
+    if (handler) {
+      if (!mongoose.Types.ObjectId.isValid(handler)) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Invalid handler ID", false)
+        );
+      }
+
+      handlerDoc = await User.findById(handler);
+      if (!handlerDoc) {
+        return res.status(404).json(
+          new ApiResponse(404, null, "Handler not found", false)
+        );
+      }
+
+      // 🚀 Prevent Handler assigned to multiple buses
+      const handlerAlreadyAssigned = await Bus.findOne({ handler });
+      if (handlerAlreadyAssigned) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Handler already assigned to another bus", false)
+        );
+      }
+    }
+
+    // 6️⃣ Validate Route
+    let routeDoc = null;
+    if (route) {
+      if (!mongoose.Types.ObjectId.isValid(route)) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Invalid route ID", false)
+        );
+      }
+
+      routeDoc = await Route.findById(route);
+      if (!routeDoc) {
+        return res.status(404).json(
+          new ApiResponse(404, null, "Route not found", false)
+        );
+      }
+    }
+
+    // 7️⃣ Create Bus
+    const bus = await Bus.create({
+      busNumber,
+      busRegistrationNumber,
+      capacity,
+      driver: driver || null,
+      handler: handler || null,
+      route: route || null
+    });
+
+    return res.status(201).json(
+      new ApiResponse(201, bus, "Bus created successfully", true)
+    );
+
+  } catch (error) {
+
+    console.log("Server error in createBus", error);
+
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error creating bus", false)
+    );
+
+  }
+
+};
+
+const getAllBuses = async (req, res) => {
+
+  try {
+
+    const buses = await Bus.find()
+      .populate({
+        path: "driver",
+        select: "firstName lastName licenseNumber"
+      })
+      .populate({
+        path: "handler",
+        select: "firstName lastName"
+      })
+      .populate({
+        path: "route",
+        select: "routeName"
+      })
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(
+      new ApiResponse(200, buses, "Buses fetched successfully", true)
+    );
+
+  } catch (error) {
+
+    console.log("Get All Buses Error:", error);
+
+    return res.status(500).json(
+      new ApiResponse(500, null, "Error fetching buses", false)
+    );
+
+  }
+
+};
+
+const getBusById = async (req, res) => {
+
+  try {
+
+    const { busId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(busId)) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Invalid bus ID", false)
+      );
+    }
+
+    const bus = await Bus.findById(busId)
+      .populate({
+        path: "driver",
+        select: "firstName lastName licenseNumber phone"
+      })
+      .populate({
+        path: "handler",
+        select: "firstName lastName username"
+      })
+      .populate({
+        path: "route"
+      });
+
+    if (!bus) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Bus not found", false)
+      );
+    }
+
+    return res.status(200).json(
+      new ApiResponse(200, bus, "Bus fetched successfully", true)
+    );
+
+  } catch (error) {
+
+    console.log("Get Bus By ID Server Error:", error);
+
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server Error fetching bus", false)
+    );
+
+  }
+
+};
+
+const updateBus = async (req, res) => {
+
+  try {
+
+    const { busId } = req.params;
+
+    const {
+      busNumber,
+      busRegistrationNumber,
+      capacity,
+      driver,
+      handler,
+      route
+    } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(busId)) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Invalid bus ID", false)
+      );
+    }
+
+    const bus = await Bus.findById(busId);
+
+    if (!bus) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Bus not found", false)
+      );
+    }
+
+    if (busNumber && busNumber !== bus.busNumber) {
+      const existingBus = await Bus.findOne({ busNumber });
+      if (existingBus) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Bus number already exists", false)
+        );
+      }
+      bus.busNumber = busNumber;
+    }
+
+    if (busRegistrationNumber && busRegistrationNumber !== bus.busRegistrationNumber) {
+      const existingReg = await Bus.findOne({ busRegistrationNumber });
+      if (existingReg) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Bus registration number already exists", false)
+        );
+      }
+      bus.busRegistrationNumber = busRegistrationNumber;
+    }
+
+    if (capacity !== undefined) {
+      bus.capacity = capacity;
+    }
+
+    if (driver) {
+
+      if (!mongoose.Types.ObjectId.isValid(driver)) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Invalid driver ID", false)
+        );
+      }
+
+      const driverDoc = await Driver.findById(driver);
+      if (!driverDoc) {
+        return res.status(404).json(
+          new ApiResponse(404, null, "Driver not found", false)
+        );
+      }
+
+      // prevent assigning driver to multiple buses
+      const driverAssigned = await Bus.findOne({
+        driver,
+        _id: { $ne: busId }
+      });
+
+      if (driverAssigned) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Driver already assigned to another bus", false)
+        );
+      }
+
+      bus.driver = driver;
+    }
+
+    if (handler) {
+
+      if (!mongoose.Types.ObjectId.isValid(handler)) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Invalid handler ID", false)
+        );
+      }
+
+      const handlerDoc = await User.findById(handler);
+      if (!handlerDoc) {
+        return res.status(404).json(
+          new ApiResponse(404, null, "Handler not found", false)
+        );
+      }
+
+      bus.handler = handler;
+    }
+
+    if (route) {
+
+      if (!mongoose.Types.ObjectId.isValid(route)) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Invalid route ID", false)
+        );
+      }
+
+      const routeDoc = await Route.findById(route);
+      if (!routeDoc) {
+        return res.status(404).json(
+          new ApiResponse(404, null, "Route not found", false)
+        );
+      }
+
+      bus.route = route;
+    }
+
+    await bus.save();
+
+    return res.status(200).json(
+      new ApiResponse(200, bus, "Bus updated successfully", true)
+    );
+
+  } catch (error) {
+
+    console.log("Update Bus Server Error:", error);
+
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server Error updating bus", false)
+    );
+
+  }
+
+};
+
+const deleteBus = async (req, res) => {
+
+  try {
+
+    const { busId } = req.params;
+
+    // 1️⃣ Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(busId)) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Invalid bus ID", false)
+      );
+    }
+
+    // 2️⃣ Check if bus exists
+    const bus = await Bus.findById(busId);
+
+    if (!bus) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Bus not found", false)
+      );
+    }
+
+    // 3️⃣ Delete bus
+    await Bus.findByIdAndDelete(busId);
+
+    return res.status(200).json(
+      new ApiResponse(200, null, "Bus deleted successfully", true)
+    );
+
+  } catch (error) {
+
+    console.log("Server Error in deleteBus:", error);
+
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server Error deleting bus", false)
+    );
+
+  }
+
+};
+
+
+
 export {
   bulkRegisterUsers,
   resetUserPassword,
@@ -709,5 +1329,18 @@ export {
   removeClassTeacher,
   assignTeacherClasses,
   createExam,
-  getAllExam
+  getAllExam,
+  getAllBusHandler,
+  createDriver,
+  getDrivers,
+  createRoute,
+  getAllRoutes,
+  getRouteById,
+  updateRoute,
+  deleteRoute,
+  createBus,
+  getAllBuses,
+  getBusById,
+  deleteBus,
+  updateBus
 }

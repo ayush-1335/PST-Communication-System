@@ -19,6 +19,11 @@ import Parents from "./MainPages/Admin/Parents"
 import Teachers from "./MainPages/Admin/Teachers"
 import AssignRelation from "./MainPages/Admin/AssignRelation"
 import { AdminProvider } from "./context/AdminContext"
+//Transport By Admin
+import Transport from "./MainPages/Admin/Transport/Transport"
+import CreateDriver from "./MainPages/Admin/Transport/CreateDriver";
+import RouteManagement from "./MainPages/Admin/Transport/RouteManagement";
+import BusManagement from "./MainPages/Admin/Transport/BusManagement";
 
 //Teacher routes
 import TeacherDashboard from "./MainPages/Teacher/TeacherDashboard";
@@ -79,7 +84,7 @@ function App() {
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-            } 
+            }
           />
 
           <Route
@@ -97,7 +102,7 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["ADMIN"]}>
                 <AdminProvider>
-                  <AdminDashboard />;
+                  <AdminDashboard />
                 </AdminProvider>
               </ProtectedRoute>
             }
@@ -109,6 +114,13 @@ function App() {
             <Route path="students" element={<Students />} />
             <Route path="teachers" element={<Teachers />} />
             <Route path="exams" element={<CreateExam />} />
+
+            <Route path="transport" element={<Transport />}>
+              <Route path="drivers" element={<CreateDriver />} />
+              <Route path="routes" element={<RouteManagement />} />
+              <Route path="buses" element={<BusManagement />} />
+              {/* <Route path="assign-bus" element={<AssignBus />} /> */}
+            </Route>
           </Route>
 
           // Teacher routes
@@ -129,7 +141,7 @@ function App() {
               {/* <Route index element={<ClassOverview />} /> */}
               <Route path="create-assignment" element={<CreateAssignment />} />
               <Route path="assignments" element={<ViewAssignments />} />
-              <Route path="schedule-exam" element={<ClassSubjectExams /> } />    // Todo
+              <Route path="schedule-exam" element={<ClassSubjectExams />} />    // Todo
             </Route>
 
             <Route path="students" element={<MyStudents />} />
@@ -152,7 +164,7 @@ function App() {
             <Route index element={<StudentHome />} />
             <Route path="view-attendance" element={<MyAttendance />} />
             <Route path="view-assignment" element={<StudentAssignments />} />
-            <Route path="materials" element={<StudentMaterials/>} />
+            <Route path="materials" element={<StudentMaterials />} />
             <Route path="view-exam" element={<StudentExams />} />
           </Route>
 
@@ -169,8 +181,8 @@ function App() {
           >
             <Route index element={<ParentHome />} />
             <Route path="connect-child" element={<ConnectWithChildren />} />
-            <Route path="attendance" element={ <ParentAttendance studentId={selectedChild?._id}/> } />
-            <Route path="exams" element={ <ParentExams studentId={selectedChild?._id}/> } />
+            <Route path="attendance" element={<ParentAttendance studentId={selectedChild?._id} />} />
+            <Route path="exams" element={<ParentExams studentId={selectedChild?._id} />} />
 
           </Route>
 

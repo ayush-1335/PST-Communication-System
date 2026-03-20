@@ -104,11 +104,22 @@ const CreateUsers = () => {
     }
   };
 
+  const formatSuccessData = () => {
+    return result.success.map((u) => ({
+      Username: u.username,
+      Password: u.tempPassword,
+      Name: `${u.firstName || ""} ${u.lastName || ""}`,
+      Role: u.role || ""
+    }));
+  };
+
   // 📄 Excel Download
   const downloadExcel = () => {
     if (!result?.success?.length) return;
 
-    const worksheet = XLSX.utils.json_to_sheet(result.success);
+    const formatted = formatSuccessData();
+
+    const worksheet = XLSX.utils.json_to_sheet(formatted);
     const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
@@ -122,16 +133,17 @@ const CreateUsers = () => {
 
     const doc = new jsPDF();
 
-    const tableData = result.success.map((u) => [
-      u.firstName,
-      u.lastName,
-      u.username,
-      u.tempPassword,
-      u.role,
+    const formatted = formatSuccessData();
+
+    const tableData = formatted.map((u) => [
+      u.Name,
+      u.Username,
+      u.Password,
+      u.Role
     ]);
 
     autoTable(doc, {
-      head: [["First Name", "Last Name", "Username", "Password", "Role"]],
+      head: [["Name", "Username", "Password", "Role"]], // ⭐ CHANGE
       body: tableData,
     });
 
@@ -190,7 +202,7 @@ const CreateUsers = () => {
 
               {result.failed.map((u, i) => (
                 <div key={i} className="text-sm text-red-600">
-                  {u.username} — {u.reason}
+                  {u.username || "Unknown"} — {u.reason}
                 </div>
               ))}
 
@@ -250,6 +262,7 @@ const CreateUsers = () => {
                 <option value="STUDENT">Student</option>
                 <option value="TEACHER">Teacher</option>
                 <option value="PARENT">Parent</option>
+                <option value="TRANSPORT_HANDLER">Bus Handler</option>
               </select>
             </Field>
 
@@ -281,6 +294,19 @@ const CreateUsers = () => {
               )}
 
               {user.role === "PARENT" && (
+                <Field error={user.errors.phone}>
+                  <input
+                    placeholder="Phone"
+                    value={user.phone}
+                    onChange={(e) =>
+                      updateUser(index, "phone", e.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </Field>
+              )}
+
+              {user.role === "TRANSPORT_HANDLER" && (
                 <Field error={user.errors.phone}>
                   <input
                     placeholder="Phone"

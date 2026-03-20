@@ -1,5 +1,5 @@
 import {Router} from "express"
-import {bulkCreateClasses, resetUserPassword, bulkRegisterUsers, getAllStudents, getAllParents, getAllTeachers , getAllClasses, assignStudentsToClass, assignClassTeacher, removeClassTeacher, assignTeacherClasses, createExam, getAllExam } from "../controllers/admin.controller.js"
+import {bulkCreateClasses, resetUserPassword, bulkRegisterUsers, getAllStudents, getAllParents, getAllTeachers , getAllClasses, assignStudentsToClass, assignClassTeacher, removeClassTeacher, assignTeacherClasses, createExam, getAllExam, getAllBusHandler, createDriver, getDrivers, createRoute, getAllRoutes, getRouteById, updateRoute, deleteRoute, createBus, getAllBuses, getBusById, updateBus, deleteBus } from "../controllers/admin.controller.js"
 
 const router = Router()
 
@@ -17,5 +17,22 @@ router.post("/remove-class-teacher", removeClassTeacher)
 router.put("/assign-teacher-classes", assignTeacherClasses)
 router.post("/create-exam", createExam)
 router.get("/get-all-exams", getAllExam)
+
+router.get("/bus-handlers", getAllBusHandler)
+router.post("/transport/create-driver", createDriver)
+router.get("/transport/drivers", getDrivers)
+
+router.post("/transport/create-route", createRoute)
+router.get("/transport/routes", getAllRoutes)
+router.get("/transport/single-route/:routeId", getRouteById)
+router.put("/transport/update-route/:routeId", updateRoute)
+router.delete("/transport/delete-route/:routeId", deleteRoute)
+
+router.post("/transport/create-bus", createBus)
+router.get("/transport/buses", getAllBuses)
+router.get("/transport/single-bus/:busId", getBusById)
+router.put("/transport/update-bus/:busId", updateBus)
+router.delete("/transport/delete-bus/:busId", deleteBus)
+
 
 export default router

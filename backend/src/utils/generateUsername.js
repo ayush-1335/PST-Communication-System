@@ -5,7 +5,9 @@ export const generateUsername = async (role) => {
   const rolePrefix = {
     STUDENT: "stu",
     TEACHER: "tch",
-    PARENT: "par"
+    PARENT: "par",
+    TRANSPORT_HANDLER: "hdl",
+    // DRIVER: "dri"
   }
 
   const prefix = rolePrefix[role]

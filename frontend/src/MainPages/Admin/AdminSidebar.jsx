@@ -30,6 +30,8 @@ const AdminSidebar = () => {
         <NavLink to="/admin/parents" className={linkClass}>Parents</NavLink>
         <NavLink to="/admin/teachers" className={linkClass}>Teachers</NavLink>
         <NavLink to="/admin/exams" className={linkClass}>Exam Scheduled</NavLink>
+
+        <NavLink to="/admin/transport" className={linkClass}>Transport</NavLink>
       </nav>
 
     </aside>

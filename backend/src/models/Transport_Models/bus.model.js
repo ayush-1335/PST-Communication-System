@@ -8,7 +8,16 @@ const busSchema = new mongoose.Schema({
     unique: true
   },
 
-  capacity: Number,
+  busRegistrationNumber: {
+    type: String,
+    required: true,
+    unique: true
+  },
+
+  capacity: {
+    type: Number,
+    required: true
+  },
 
   driver: {
     type: mongoose.Schema.Types.ObjectId,
@@ -26,9 +35,15 @@ const busSchema = new mongoose.Schema({
   },
 
   currentLocation: {
-    latitude: Number,
-    longitude: Number,
-    updatedAt: Date
+    latitude: {
+      type: Number
+    },
+    longitude: {
+      type: Number
+    },
+    updatedAt: {
+      type: Date
+    }
   }
 
 }, { timestamps: true });

@@ -17,7 +17,7 @@ const userSchema = new Schema(
         username: {
             type: String,
             required: true,
-            unique: true // rollNumber for students
+            unique: true
         },
 
         password: {
