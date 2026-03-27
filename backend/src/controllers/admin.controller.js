@@ -13,6 +13,7 @@ import { TransportHandler } from "../models/transportHandler.model.js"
 import { Driver } from "../models/Transport_Models/driver.model.js"
 import { Route } from "../models/Transport_Models/route.model.js"
 import { Bus } from "../models/Transport_Models/bus.model.js";
+import { StudentTransport } from "../models/Transport_Models/studentTransport.model.js";
 
 
 const bulkRegisterUsers = async (req, res) => {
@@ -1071,10 +1072,29 @@ const getAllBuses = async (req, res) => {
         path: "route",
         select: "routeName"
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const busesWithSeats = await Promise.all(
+      buses.map(async (bus) => {
+
+        const assignedCount = await StudentTransport.countDocuments({
+          bus: bus._id,
+          status: { $in: ["APPROVED", "ACTIVE"] }
+        });
+
+        return {
+          ...bus,
+
+          assignedCount,
+          availableSeats: (bus.capacity || 0) - assignedCount,
+          isFull: (bus.capacity || 0) - assignedCount <= 0
+        };
+      })
+    );
 
     return res.status(200).json(
-      new ApiResponse(200, buses, "Buses fetched successfully", true)
+      new ApiResponse(200, busesWithSeats, "Buses fetched successfully", true)
     );
 
   } catch (error) {
@@ -1314,7 +1334,155 @@ const deleteBus = async (req, res) => {
 
 };
 
+const getTransportRequests = async (req, res) => {
+  try {
+    const { status } = req.query;
 
+    const filter = {};
+
+    if (status) {
+      filter.status = status;
+    }
+
+    const requests = await StudentTransport.find(filter)
+      .populate({
+        path: "student",
+        populate: {
+          path: "user",
+          select: "firstName lastName username"
+        }
+      })
+      .populate("route", "routeName")
+      .populate("bus", "busNumber busRegistrationNumber")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        requests,
+        "Transport requests fetched successfully",
+        true
+      )
+    );
+
+  } catch (error) {
+    console.log("Get Transport Requests Error:", error);
+
+    return res.status(500).json(
+      new ApiResponse(500, null, "Something went wrong", false)
+    );
+  }
+};
+
+const updateTransportRequestStatus = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { action, busId } = req.body;
+
+    if (!requestId || !action) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Request ID and action are required", false)
+      );
+    }
+
+    const request = await StudentTransport.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Transport request not found", false)
+      );
+    }
+
+    if (["APPROVED", "ACTIVE"].includes(request.status)) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Request already approved", false)
+      );
+    }
+
+    if (request.status === "REJECTED") {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Request already rejected", false)
+      );
+    }
+
+    if (action === "REJECT") {
+      request.status = "REJECTED";
+      request.bus = null;
+
+      await request.save();
+
+      return res.status(200).json(
+        new ApiResponse(200, request, "Request rejected successfully", true)
+      );
+    }
+
+    if (action === "APPROVE") {
+
+      if (request.status !== "PENDING") {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Only pending requests can be approved", false)
+        );
+      }
+
+      if (!busId) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Bus ID is required for approval", false)
+        );
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(busId)) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Invalid Bus ID", false)
+        );
+      }
+
+      const bus = await Bus.findById(busId);
+
+      if (!bus) {
+        return res.status(404).json(
+          new ApiResponse(404, null, "Bus not found", false)
+        );
+      }
+
+      const count = await StudentTransport.countDocuments({
+        bus: bus._id,
+        status: { $in: ["APPROVED", "ACTIVE"] }
+      });
+
+      if (count >= (bus.capacity || 0)) {
+        return res.status(400).json(
+          new ApiResponse(400, null, "Bus is full", false)
+        );
+      }
+
+      request.bus = bus._id;
+      request.status = "APPROVED";
+
+      request.approvedAt = new Date();
+
+      request.expiresAt = new Date(
+        Date.now() + 3 * 24 * 60 * 60 * 1000 // 3 days
+      );
+
+      await request.save();
+
+      return res.status(200).json(
+        new ApiResponse(200, request, "Request approved successfully", true)
+      );
+    }
+
+    return res.status(400).json(
+      new ApiResponse(400, null, "Invalid action", false)
+    );
+
+  } catch (error) {
+    console.log("Update Transport Request Error:", error);
+
+    return res.status(500).json(
+      new ApiResponse(500, null, "Something went wrong", false)
+    );
+  }
+};
 
 export {
   bulkRegisterUsers,
@@ -1342,5 +1510,7 @@ export {
   getAllBuses,
   getBusById,
   deleteBus,
-  updateBus
+  updateBus,
+  getTransportRequests,
+  updateTransportRequestStatus,
 }

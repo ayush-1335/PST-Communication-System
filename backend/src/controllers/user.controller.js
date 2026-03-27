@@ -6,7 +6,6 @@ import { Parent } from "../models/parent.model.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { generateAccessToken } from "../utils/token.js"
 import generateStudentCode from "../utils/generateStudentCode.js"
-import mongoose from "mongoose"
 
 
 const registerUser = async (req, res) => {
@@ -264,6 +263,5 @@ const changePassword = async (req, res) => {
         new ApiResponse(200, null, "Password changed successfully")
     )
 }
-
 
 export { registerUser, loginUser, logoutUser, getUserProfile, changePassword }

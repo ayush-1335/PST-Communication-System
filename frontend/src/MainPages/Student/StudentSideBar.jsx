@@ -33,6 +33,10 @@ const StudentSidebar = () => {
           View Exam
         </NavLink>
 
+        <NavLink to="/student/transport" className={linkClass}>
+          Transport Servies
+        </NavLink>
+
 
       </nav>
     </aside>

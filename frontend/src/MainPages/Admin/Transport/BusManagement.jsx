@@ -7,7 +7,7 @@ const BusManagement = () => {
 
     const [drivers, setDrivers] = useState([]);
     const [routes, setRoutes] = useState([]);
-    const [handlers, setHandlers] = useState([]); // ⭐ NEW
+    const [handlers, setHandlers] = useState([]);
 
     const [busNumber, setBusNumber] = useState("");
     const [busRegistrationNumber, setBusRegistrationNumber] = useState("");
@@ -15,12 +15,11 @@ const BusManagement = () => {
 
     const [driver, setDriver] = useState("");
     const [route, setRoute] = useState("");
-    const [handler, setHandler] = useState(""); // ⭐ NEW
+    const [handler, setHandler] = useState("");
 
     const [editingBusId, setEditingBusId] = useState(null);
     const [search, setSearch] = useState("");
 
-    // 🔄 Fetch all data
     const fetchData = async () => {
         try {
 
@@ -54,7 +53,6 @@ const BusManagement = () => {
         fetchData();
     }, []);
 
-    // ➕ Create / Update
     const handleSubmit = async () => {
 
         if (!busNumber || !busRegistrationNumber || !driver || !route || !handler) {
@@ -80,7 +78,7 @@ const BusManagement = () => {
                     capacity,
                     driver,
                     route,
-                    handler // ⭐ NEW
+                    handler
                 })
             });
 
@@ -98,7 +96,6 @@ const BusManagement = () => {
         }
     };
 
-    // ✏️ Edit
     const handleEdit = (bus) => {
         setEditingBusId(bus._id);
         setBusNumber(bus.busNumber);
@@ -106,10 +103,9 @@ const BusManagement = () => {
         setCapacity(bus.capacity || "");
         setDriver(bus.driver?._id || "");
         setRoute(bus.route?._id || "");
-        setHandler(bus.handler?._id || ""); // ⭐ NEW
+        setHandler(bus.handler?._id || "");
     };
 
-    // ❌ Delete
     const handleDelete = async (id) => {
 
         if (!confirm("Are you sure you want to delete this bus?")) return;
@@ -133,7 +129,6 @@ const BusManagement = () => {
         }
     };
 
-    // 🔍 Search
     const handleSearch = (value) => {
 
         setSearch(value);
@@ -147,14 +142,13 @@ const BusManagement = () => {
         setFilteredBuses(filtered);
     };
 
-    // 🔄 Reset
     const resetForm = () => {
         setBusNumber("");
         setBusRegistrationNumber("");
         setCapacity("");
         setDriver("");
         setRoute("");
-        setHandler(""); // ⭐ NEW
+        setHandler("");
         setEditingBusId(null);
     };
 
@@ -165,7 +159,6 @@ const BusManagement = () => {
                 {editingBusId ? "Update Bus" : "Create Bus"}
             </h2>
 
-            {/* FORM */}
             <div className="grid grid-cols-2 gap-3 mb-4">
 
                 <input
@@ -189,7 +182,6 @@ const BusManagement = () => {
                     className="border px-3 py-2 rounded"
                 />
 
-                {/* DRIVER */}
                 <select value={driver} onChange={(e) => setDriver(e.target.value)} className="border px-3 py-2 rounded">
                     <option value="">Select Driver</option>
                     {drivers.map((d) => (
@@ -199,7 +191,6 @@ const BusManagement = () => {
                     ))}
                 </select>
 
-                {/* HANDLER ⭐ */}
                 <select
                     value={handler}
                     onChange={(e) => setHandler(e.target.value)}
@@ -215,7 +206,6 @@ const BusManagement = () => {
 
                 </select>
 
-                {/* ROUTE */}
                 <select value={route} onChange={(e) => setRoute(e.target.value)} className="border px-3 py-2 rounded">
                     <option value="">Select Route</option>
                     {routes.map((r) => (
@@ -241,7 +231,6 @@ const BusManagement = () => {
 
             </div>
 
-            {/* SEARCH */}
             <input
                 placeholder="Search bus..."
                 value={search}
@@ -257,7 +246,7 @@ const BusManagement = () => {
                         <th className="p-2 border">Bus No</th>
                         <th className="p-2 border">Reg No</th>
                         <th className="p-2 border">Driver</th>
-                        <th className="p-2 border">Handler</th> {/* ⭐ */}
+                        <th className="p-2 border">Handler</th>
                         <th className="p-2 border">Route</th>
                         <th className="p-2 border">Actions</th>
                     </tr>

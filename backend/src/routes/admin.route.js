@@ -1,5 +1,5 @@
 import {Router} from "express"
-import {bulkCreateClasses, resetUserPassword, bulkRegisterUsers, getAllStudents, getAllParents, getAllTeachers , getAllClasses, assignStudentsToClass, assignClassTeacher, removeClassTeacher, assignTeacherClasses, createExam, getAllExam, getAllBusHandler, createDriver, getDrivers, createRoute, getAllRoutes, getRouteById, updateRoute, deleteRoute, createBus, getAllBuses, getBusById, updateBus, deleteBus } from "../controllers/admin.controller.js"
+import {bulkCreateClasses, resetUserPassword, bulkRegisterUsers, getAllStudents, getAllParents, getAllTeachers , getAllClasses, assignStudentsToClass, assignClassTeacher, removeClassTeacher, assignTeacherClasses, createExam, getAllExam, getAllBusHandler, createDriver, getDrivers, createRoute, getAllRoutes, getRouteById, updateRoute, deleteRoute, createBus, getAllBuses, getBusById, updateBus, deleteBus, getTransportRequests, updateTransportRequestStatus } from "../controllers/admin.controller.js"
 
 const router = Router()
 
@@ -27,6 +27,9 @@ router.get("/transport/routes", getAllRoutes)
 router.get("/transport/single-route/:routeId", getRouteById)
 router.put("/transport/update-route/:routeId", updateRoute)
 router.delete("/transport/delete-route/:routeId", deleteRoute)
+router.get("/transport/requests", getTransportRequests)
+router.post("/transport/request/:requestId", updateTransportRequestStatus)
+
 
 router.post("/transport/create-bus", createBus)
 router.get("/transport/buses", getAllBuses)
