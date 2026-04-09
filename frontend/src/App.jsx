@@ -25,6 +25,7 @@ import CreateDriver from "./MainPages/Admin/Transport/CreateDriver";
 import RouteManagement from "./MainPages/Admin/Transport/RouteManagement";
 import BusManagement from "./MainPages/Admin/Transport/BusManagement";
 import TransportRequest from "./MainPages/Admin/Transport/TransportRequest";
+import BusListWithStudents from "./MainPages/Admin/Transport/BusListWithStudents";
 
 //Teacher routes
 import TeacherDashboard from "./MainPages/Teacher/TeacherDashboard";
@@ -49,7 +50,7 @@ import ClassTeacherExams from "./MainPages/Teacher/Exam/ClassTeacherExams";
 import ClassSubjectExams from "./MainPages/Teacher/Exam/ClassSubjectExam";
 import StudentMaterials from "./MainPages/Student/StudentMaterials";
 import StudentExams from "./MainPages/Student/StudentExam";
-import ApplyTransport from "./MainPages/Student/ApplyTransport";
+import StudentTransport from "./MainPages/Student/StudentTransport";
 
 //Parent routes
 import ParentDashboard from "./MainPages/Parent/ParentDashboard";
@@ -122,7 +123,7 @@ function App() {
               <Route path="routes" element={<RouteManagement />} />
               <Route path="buses" element={<BusManagement />} />
               <Route path="transport-request" element={<TransportRequest />} />
-              {/* <Route path="assign-bus" element={<AssignBus />} /> */}
+              <Route path="bus-info" element={<BusListWithStudents />} />
             </Route>
           </Route>
 
@@ -169,7 +170,7 @@ function App() {
             <Route path="view-assignment" element={<StudentAssignments />} />
             <Route path="materials" element={<StudentMaterials />} />
             <Route path="view-exam" element={<StudentExams />} />
-            <Route path="transport" element={<ApplyTransport />} />
+            <Route path="transport" element={<StudentTransport />} />
           </Route>
 
           // Parent routes

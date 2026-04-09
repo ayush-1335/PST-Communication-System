@@ -1140,8 +1140,22 @@ const getBusById = async (req, res) => {
       );
     }
 
+    const students = await StudentTransport.find({
+      bus: busId,
+      status: { $in: ["APPROVED", "ACTIVE"] }
+    })
+      .populate({
+        path: "student",
+        select: "user",
+        populate: {
+          path: "user",
+          select: "firstName lastName userName"
+        }
+      })
+      .lean();
+
     return res.status(200).json(
-      new ApiResponse(200, bus, "Bus fetched successfully", true)
+      new ApiResponse(200, { ...bus, students }, "Bus fetched successfully", true)
     );
 
   } catch (error) {

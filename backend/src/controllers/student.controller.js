@@ -151,8 +151,8 @@ const getStudentExams = async (req, res) => {
     const userId = req.user.userId
 
     const studentDoc = await Student.findOne({ user: userId })
-    .select("standard")
-    .lean()
+      .select("standard")
+      .lean()
 
     if (!studentDoc) {
       return res.status(404).json(
@@ -161,7 +161,7 @@ const getStudentExams = async (req, res) => {
     }
 
     const exams = await Exam.find({ standard: studentDoc.standard })
-    .sort({ examDate: 1 }).lean()
+      .sort({ examDate: 1 }).lean()
 
     return res.status(200).json(
       new ApiResponse(200, exams, "All exams fetch for student")
@@ -184,19 +184,19 @@ const getMaterialsForStudent = async (req, res) => {
 
     const student = await Student.findOne({ user: userId })
 
-    if(!student){
+    if (!student) {
       return res.status(404).json(
         new ApiResponse(404, null, "Student not found", false)
       )
-    } 
+    }
 
-    const materials = await Material.find({ standard: student.standard}).sort({ createdAt: -1 })
+    const materials = await Material.find({ standard: student.standard }).sort({ createdAt: -1 })
 
     return res.status(200).json(
       new ApiResponse(200, materials, "Materials fetch successfully")
     )
 
-    
+
   } catch (error) {
     console.log("Error in getMaterialForStudent:", error)
     return res.status(500).json(
@@ -205,6 +205,61 @@ const getMaterialsForStudent = async (req, res) => {
   }
 
 }
+
+const getAllRoutes = async (req, res) => {
+
+  try {
+
+    const routes = await Route.find().sort({ createdAt: -1 })
+
+    return res.status(200).json(
+      new ApiResponse(200, routes, "All routed fetch successfully")
+    )
+
+  } catch (error) {
+    console.log("Server error in getAllRoutes")
+    return res.status(500).json(
+      new ApiResponse(500, null, "Server error in finding all routes", false)
+    )
+
+  }
+}
+
+const getStopsByRoute = async (req, res) => {
+  try {
+    const { routeId } = req.params;
+
+    if (!routeId) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Route ID is required", false)
+      );
+    }
+
+    const route = await Route.findById(routeId).select("routeName stops");
+
+    if (!route) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Route not found", false)
+      );
+    }
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        route.stops,
+        "Stops fetched successfully",
+        true
+      )
+    );
+
+  } catch (error) {
+    console.log("Get Stops Error:", error);
+
+    return res.status(500).json(
+      new ApiResponse(500, null, "Something went wrong", false)
+    );
+  }
+};
 
 const applyTransportRequest = async (req, res) => {
   try {
@@ -283,58 +338,119 @@ const applyTransportRequest = async (req, res) => {
   }
 };
 
-const getAllRoutes = async (req, res) => {
-
+const getRequestStatus = async (req, res) => {
   try {
 
-    const routes = await Route.find().sort({ createdAt: -1 })
+    const student = await Student.findOne({ user: req.user.userId })
 
-    return res.status(200).json(
-      new ApiResponse(200, routes, "All routed fetch successfully")
-    )
-
-  } catch (error) {
-    console.log("Server error in getAllRoutes")
-    return res.status(500).json(
-      new ApiResponse(500, null, "Server error in finding all routes", false)
-    )
-
-  }
-
-}
-
-const getStopsByRoute = async (req, res) => {
-  try {
-    const { routeId } = req.params;
-
-    if (!routeId) {
-      return res.status(400).json(
-        new ApiResponse(400, null, "Route ID is required", false)
-      );
-    }
-
-    const route = await Route.findById(routeId).select("routeName stops");
-
-    if (!route) {
+    if (!student) {
       return res.status(404).json(
-        new ApiResponse(404, null, "Route not found", false)
+        new ApiResponse(404, null, "Student not found", false)
       );
     }
 
+    const studentId = student._id;
+
+    const request = await StudentTransport.findOne({ student: studentId })
+      .populate("route", "routeName")
+      .populate("bus", "busNumber")
+      .sort({ createdAt: -1 });
+
+    if (!request) {
+      return res.status(200).json(
+        new ApiResponse(200, null, "No transport request found", true)
+      );
+    }
+
+    if (
+      request.status === "APPROVED" &&
+      request.expiresAt &&
+      new Date() > request.expiresAt
+    ) {
+      request.status = "EXPIRED";
+      await request.save();
+    }
+
+    const responseData = {
+      _id: request._id,
+      status: request.status,
+      routeName: request.route?.routeName || null,
+      stopName: request.stopName,
+      busNumber: request.bus?.busNumber || null,
+      expiresAt: request.expiresAt
+    };
+
     return res.status(200).json(
-      new ApiResponse(
-        200,
-        route.stops,
-        "Stops fetched successfully",
-        true
-      )
+      new ApiResponse(200, responseData, "Request status fetched", true)
     );
 
   } catch (error) {
-    console.log("Get Stops Error:", error);
+
+    console.log("Get Request Status Error:", error);
 
     return res.status(500).json(
       new ApiResponse(500, null, "Something went wrong", false)
+    );
+  }
+};
+
+const payTransportFee = async (req, res) => {
+  try {
+
+    const student = await Student.findOne({ user: req.user.userId });
+
+    if (!student) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "Student not found", false)
+      );
+    }
+
+    const studentId = student._id;
+
+    const request = await StudentTransport.findOne({
+      student: studentId,
+      status: "APPROVED"
+    });
+
+    if (!request) {
+      return res.status(404).json(
+        new ApiResponse(404, null, "No approved request found", false)
+      );
+    }
+
+    if (request.expiresAt && new Date() > request.expiresAt) {
+
+      request.status = "EXPIRED";
+      await request.save();
+
+      return res.status(400).json(
+        new ApiResponse(400, null, "Request expired. Please apply again.", false)
+      );
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 2000)); // 2 sec delay
+
+    const isSuccess = Math.random() > 0.2; // 80% success
+
+    if (!isSuccess) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Payment failed. Try again.", false)
+      );
+    }
+
+    // 🔴 SUCCESS
+    request.status = "ACTIVE";
+    await request.save();
+
+    return res.status(200).json(
+      new ApiResponse(200, request, "Payment successful", true)
+    );
+
+  } catch (error) {
+    console.log("Payment Error:", error);
+
+    return res.status(500).json(
+      new ApiResponse(500, null, "Payment failed", false)
     );
   }
 };
@@ -344,7 +460,9 @@ export {
   getStudentAssignments,
   getStudentExams,
   getMaterialsForStudent,
-  applyTransportRequest,
   getAllRoutes,
   getStopsByRoute,
+  applyTransportRequest,
+  getRequestStatus,
+  payTransportFee,
 };

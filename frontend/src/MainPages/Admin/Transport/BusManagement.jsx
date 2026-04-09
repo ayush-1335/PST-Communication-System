@@ -42,7 +42,7 @@ const BusManagement = () => {
 
             if (driverData.success) setDrivers(driverData.data);
             if (routeData.success) setRoutes(routeData.data);
-            if (handlerData.success) setHandlers(handlerData.data); // ⭐ NEW
+            if (handlerData.success) setHandlers(handlerData.data);
 
         } catch (error) {
             console.log("Error fetching data", error);

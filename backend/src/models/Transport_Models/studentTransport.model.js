@@ -6,7 +6,6 @@ const studentTransportSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Student",
     required: true,
-    unique: true // 🔥 one transport per student
   },
 
   route: {

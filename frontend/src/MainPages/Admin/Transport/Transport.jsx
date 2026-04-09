@@ -32,8 +32,8 @@ const Transport = () => {
           Transport Request
         </NavLink>
 
-        <NavLink to="assign-bus" className={linkClass}>
-          Assign Bus
+        <NavLink to="bus-info" className={linkClass}>
+          Bus Info
         </NavLink>
 
       </div>
